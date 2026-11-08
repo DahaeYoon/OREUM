@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loginFragment">
+
+    <!-- 로그인 전 -->
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.oreum.ui.auth.LoginFragment"
+        android:label="@string/login_title"
+        tools:layout="@layout/fragment_login">
+        <action
+            android:id="@+id/action_login_to_home"
+            app:destination="@id/homeFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_login_to_signup"
+            app:destination="@id/signupFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/signupFragment"
+        android:name="com.example.oreum.ui.auth.SignupFragment"
+        android:label="@string/signup_title"
+        tools:layout="@layout/fragment_placeholder" />
+
+    <!-- 로그인 후: 하단 탭 5개 -->
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.oreum.ui.home.HomeFragment"
+        android:label="@string/nav_home"
+        tools:layout="@layout/fragment_placeholder" />
+
+    <fragment
+        android:id="@+id/studyFragment"
+        android:name="com.example.oreum.ui.study.StudyFragment"
+        android:label="@string/nav_study"
+        tools:layout="@layout/fragment_placeholder" />
+
+    <fragment
+        android:id="@+id/groupFragment"
+        android:name="com.example.oreum.ui.group.GroupFragment"
+        android:label="@string/nav_group"
+        tools:layout="@layout/fragment_placeholder" />
+
+    <fragment
+        android:id="@+id/calendarFragment"
+        android:name="com.example.oreum.ui.calendar.CalendarFragment"
+        android:label="@string/nav_calendar"
+        tools:layout="@layout/fragment_placeholder" />
+
+    <fragment
+        android:id="@+id/myPageFragment"
+        android:name="com.example.oreum.ui.mypage.MyPageFragment"
+        android:label="@string/nav_mypage"
+        tools:layout="@layout/fragment_placeholder" />
+</navigation>

@@ -1,0 +1,17 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- 프로토타입에는 다크 모드 디자인이 없어서, 지금은 밝은 테마를 그대로 사용해요. -->
+    <style name="Base.Theme.OREUM" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/oreum_forest_mint</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/oreum_mint</item>
+        <item name="colorOnPrimaryContainer">@color/oreum_dark_text</item>
+        <item name="colorSecondary">@color/oreum_sky_blue</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorTertiary">@color/oreum_yellow_accent</item>
+        <item name="android:colorBackground">@color/oreum_cream_white</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">@color/oreum_dark_text</item>
+        <item name="colorOnBackground">@color/oreum_dark_text</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

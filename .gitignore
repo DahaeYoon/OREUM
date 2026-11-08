@@ -1,0 +1,31 @@
+# ---- Gradle / 빌드 결과물 ----
+.gradle/
+build/
+*/build/
+.kotlin/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# ---- 개인 환경 설정 (SDK 경로 등) ----
+local.properties
+*.iml
+
+# ---- Android Studio: 사용자별 설정은 제외, 공용 코드 스타일만 공유 ----
+/.idea/*
+!/.idea/codeStyles/
+
+# ---- macOS ----
+.DS_Store
+
+# ---- 비밀 정보: 절대 커밋하지 않기 ----
+# 서명 키 · 키 비밀번호
+*.jks
+*.keystore
+keystore.properties
+# Firebase/Google Cloud 서비스 계정 키 (서버용 비밀 키)
+*service-account*.json
+*-adminsdk-*.json
+# 개인 API 키 파일
+secrets.properties
+.env
