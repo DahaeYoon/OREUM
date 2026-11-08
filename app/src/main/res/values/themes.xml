@@ -1,0 +1,32 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- 오름 기본 테마: 프로토타입처럼 밝은 크림 배경 + 민트 계열 -->
+    <style name="Base.Theme.OREUM" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/oreum_forest_mint</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/oreum_mint</item>
+        <item name="colorOnPrimaryContainer">@color/oreum_dark_text</item>
+        <item name="colorSecondary">@color/oreum_sky_blue</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorTertiary">@color/oreum_yellow_accent</item>
+        <item name="android:colorBackground">@color/oreum_cream_white</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">@color/oreum_dark_text</item>
+        <item name="colorOnBackground">@color/oreum_dark_text</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <style name="Theme.OREUM" parent="Base.Theme.OREUM" />
+
+    <!-- 하단 내비게이션 -->
+    <style name="Widget.OREUM.BottomNav" parent="Widget.Material3.BottomNavigationView">
+        <item name="backgroundTint">@color/white</item>
+        <item name="itemIconTint">@color/bottom_nav_item</item>
+        <item name="itemTextColor">@color/bottom_nav_item</item>
+        <item name="itemActiveIndicatorStyle">@style/Widget.OREUM.BottomNav.Indicator</item>
+        <item name="labelVisibilityMode">labeled</item>
+    </style>
+
+    <style name="Widget.OREUM.BottomNav.Indicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">#E3F1EC</item>
+    </style>
+</resources>

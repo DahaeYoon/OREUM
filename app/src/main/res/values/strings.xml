@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">오름</string>
+    <string name="app_slogan">나의 목표를 향해 한 걸음씩, 함께 정상까지.</string>
+
+    <!-- 하단 내비게이션 -->
+    <string name="nav_home">홈</string>
+    <string name="nav_study">내 학습</string>
+    <string name="nav_group">그룹</string>
+    <string name="nav_calendar">캘린더</string>
+    <string name="nav_mypage">마이페이지</string>
+
+    <!-- 로그인 (STEP 0 임시) -->
+    <string name="login_title">로그인</string>
+    <string name="login_temp_button">임시로 들어가기</string>
+    <string name="login_to_signup">회원가입</string>
+    <string name="login_step_note">STEP 1에서 이메일·비밀번호 로그인과 Firebase Authentication을 연결해요.</string>
+    <string name="signup_title">회원가입</string>
+    <string name="signup_step_note">STEP 1에서 닉네임·이메일·비밀번호·약관 동의 화면을 만들어요.</string>
+
+    <!-- 임시 화면 설명 -->
+    <string name="placeholder_badge">준비 중</string>
+    <string name="home_desc">STEP 2에서 산 진행률과 다음 할 일을 보여 줄 홈 화면이에요.</string>
+    <string name="study_desc">STEP 3에서 목표와 할 일을 추가·수정·완료하는 화면이에요.</string>
+    <string name="group_desc">STEP 7~10에서 스터디·프로젝트 그룹과 가입 신청서를 다루는 화면이에요.</string>
+    <string name="calendar_desc">STEP 4에서 일정과 공부 가능 시간을 보여 줄 통합 캘린더예요.</string>
+    <string name="mypage_desc">STEP 1 이후 프로필과 계정 설정을 보여 줄 화면이에요.</string>
+    <string name="home_viewmodel_check">ViewModel 연결 확인: %1$s</string>
+</resources>

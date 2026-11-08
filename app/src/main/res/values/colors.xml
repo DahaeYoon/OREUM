@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 오름 프로토타입 디자인 시스템 -->
+    <color name="oreum_sky_blue">#8DBBD0</color>
+    <color name="oreum_mint">#A9DCCB</color>
+    <color name="oreum_forest_mint">#69B5A1</color>
+    <color name="oreum_forest_deep">#3E8E7A</color>
+    <color name="oreum_cream_white">#F5F6F2</color>
+    <color name="oreum_yellow_accent">#F5C76A</color>
+    <color name="oreum_dark_text">#263D39</color>
+    <color name="oreum_sub_text">#5E716C</color>
+    <color name="oreum_deep_button">#2E4A44</color>
+    <color name="oreum_coral">#E28C72</color>
+    <color name="oreum_divider">#E6ECE9</color>
+
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>
