@@ -6,6 +6,7 @@ import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import com.example.oreum.R
 import com.example.oreum.databinding.FragmentPlaceholderBinding
+import com.example.oreum.util.applySystemBarsPadding
 
 /**
  * STEP 0 임시 화면의 공통 부모.
@@ -25,6 +26,8 @@ abstract class PlaceholderFragment(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentPlaceholderBinding.bind(view)
+        // 하단 탭이 아래 여백을 처리하므로 위(상태 표시줄)만 비켜요
+        binding.root.applySystemBarsPadding(top = true, bottom = false)
         binding.title.setText(titleRes)
         binding.description.setText(descriptionRes)
     }
