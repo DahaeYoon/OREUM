@@ -1,8 +1,5 @@
 # 오름 (OREUM)
 
-개인 학습 · 스터디 · 팀 프로젝트를 한곳에서 관리하는 Android 앱입니다.
-사용자가 직접 입력한 데이터(할 일 예상 시간, 일정, 가능 시간대)로만 동작하며, AI가 작업을 자동 분석하지 않습니다.
-
 ## 개발 환경
 
 | 항목 | 값 |
@@ -10,7 +7,7 @@
 | Android Gradle Plugin | 9.4.1 (Kotlin 내장 지원) |
 | Gradle | 9.6.0 |
 | compileSdk / targetSdk / minSdk | 37 / 37 / 26 |
-| 언어 · UI | Kotlin · XML Layout + ViewBinding (Compose 사용 안 함) |
+| 언어 · UI | Kotlin · XML Layout + ViewBinding |
 | 구조 | Single Activity + Fragment, Navigation Component, MVVM + Repository |
 
 ## 패키지 구조
