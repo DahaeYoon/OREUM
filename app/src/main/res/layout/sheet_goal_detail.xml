@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 목표 상세 팝업 (프로토타입 goalSheet3): 작은 산 · 제목 · 정보 표 · 삭제 / 수정 / 계획 버튼 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="20dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="22dp">
+
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/bg_grab" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/img_mountain"
+            android:layout_width="44dp"
+            android:layout_height="32dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_mini_mountain" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/text_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/oreum_dark_text"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                tools:text="데이터베이스 기말고사" />
+
+            <TextView
+                android:id="@+id/text_meta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/oreum_ink2"
+                android:textSize="12sp"
+                tools:text="주간 목표 · 10/30 ~ 11/7 · D-2" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/text_desc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:textColor="@color/oreum_ink2"
+        android:textSize="14sp"
+        tools:text="데이터베이스 시험 준비" />
+
+    <!-- 진행률 · 현재 수준 · 학습 가능 시간 · 우선순위 · 계획 (코드에서 채움) -->
+    <LinearLayout
+        android:id="@+id/info_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/bg_info_box"
+        android:orientation="vertical"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="4dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_delete"
+            style="@style/Widget.OREUM.Button.SheetOutline"
+            android:layout_width="46dp"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/study_detail_delete"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
+            app:icon="@drawable/ic_delete"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="17dp"
+            app:iconTint="@color/oreum_coral_ink" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_edit"
+            style="@style/Widget.OREUM.Button.SheetOutline"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1"
+            android:text="@string/study_detail_edit" />
+
+        <!-- 계획 전 · 승인 대기: 진한 버튼 / 승인됨: 계획 보기 -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_plan_primary"
+            style="@style/Widget.OREUM.Button.SheetPrimary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1"
+            app:iconSize="15dp"
+            app:iconTint="@color/white"
+            tools:text="@string/study_detail_make_plan" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_plan_view"
+            style="@style/Widget.OREUM.Button.SheetOutline"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1"
+            android:text="@string/study_detail_view_plan"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/row_more"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_regen"
+            style="@style/Widget.OREUM.Button.SheetText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/study_detail_regen"
+            app:icon="@drawable/ic_spark" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_complete"
+            style="@style/Widget.OREUM.Button.SheetText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/study_detail_complete" />
+    </LinearLayout>
+</LinearLayout>

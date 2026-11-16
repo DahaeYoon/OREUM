@@ -1,5 +1,6 @@
 package com.example.oreum
 
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.SystemBarStyle
@@ -22,8 +23,8 @@ class MainActivity : AppCompatActivity() {
     private val topLevelDestinations = setOf(
         R.id.homeFragment,
         R.id.studyFragment,
-        R.id.groupFragment,
         R.id.calendarFragment,
+        R.id.recordsFragment,
         R.id.myPageFragment,
     )
 
@@ -46,7 +47,14 @@ class MainActivity : AppCompatActivity() {
 
         binding.bottomNav.setupWithNavController(navController)
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            binding.bottomNav.isVisible = destination.id in topLevelDestinations
+            val visible = destination.id in topLevelDestinations
+            binding.bottomNav.isVisible = visible
+            binding.navDivider.isVisible = visible
+            // 홈: 산 카드와 이어지는 크림색 탭 (프로토타입 immersive) · 다른 화면: 흰 탭 + 연한 회색 선
+            val home = destination.id == R.id.homeFragment
+            binding.bottomNav.backgroundTintList = ColorStateList.valueOf(if (home) 0xFFFBFAF4.toInt() else Color.WHITE)
+            binding.bottomNav.itemActiveIndicatorColor = ColorStateList.valueOf(if (home) 0xBFFFFFFF.toInt() else 0xFFE3F1EC.toInt())
+            binding.navDivider.setBackgroundColor(if (home) 0xFFFFFFFF.toInt() else 0xFFE1E8E5.toInt())
         }
     }
 }

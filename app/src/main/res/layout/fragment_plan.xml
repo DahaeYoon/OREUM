@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- STEP 4 계획 (프로토타입 p5): 제목 · 주/월 · 항목 추가 · 목표 탭 · 안내 · 주 줄 또는 월 달력 · 선택한 날 타임라인 · 학습 결과 기록 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/bg_mountain"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="centerCrop"
+        tools:src="@drawable/bg_mountain_autumn" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_auth_scrim" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="24dp">
+
+            <!-- 제목 · 주/월 · + -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/nav_calendar"
+                    android:textColor="@color/oreum_dark_text"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:id="@+id/toggle_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:background="@drawable/bg_toggle_track"
+                    android:orientation="horizontal"
+                    android:padding="3dp">
+
+                    <TextView
+                        android:id="@+id/view_week"
+                        style="@style/Widget.OREUM.ToggleItem"
+                        android:text="@string/plan_view_week" />
+
+                    <TextView
+                        android:id="@+id/view_month"
+                        style="@style/Widget.OREUM.ToggleItem"
+                        android:text="@string/plan_view_month" />
+                </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/btn_add"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="10dp"
+                    android:background="@drawable/bg_circle_add"
+                    android:contentDescription="@string/plan_add_item"
+                    android:padding="9dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_add"
+                    app:tint="@color/white" />
+            </LinearLayout>
+
+            <!-- 목표 탭 (전체 + 진행 중인 목표) -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/tabs_goal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="4dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="10dp" />
+            </HorizontalScrollView>
+
+            <!-- 승인 대기 · 계획 만들기 · 복구 · 기록 안내 -->
+            <LinearLayout
+                android:id="@+id/note_list"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:orientation="vertical" />
+
+            <!-- 주: 한 주 날짜 줄 -->
+            <LinearLayout
+                android:id="@+id/week_strip"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="-4dp"
+                android:layout_marginTop="10dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/btn_prev_week"
+                    android:layout_width="20dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/plan_prev_week"
+                    android:gravity="center"
+                    android:text="‹"
+                    android:textColor="@color/oreum_ink3"
+                    android:textSize="18sp" />
+
+                <LinearLayout
+                    android:id="@+id/week_days"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal" />
+
+                <TextView
+                    android:id="@+id/btn_next_week"
+                    android:layout_width="20dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/plan_next_week"
+                    android:gravity="center"
+                    android:text="›"
+                    android:textColor="@color/oreum_ink3"
+                    android:textSize="18sp" />
+            </LinearLayout>
+
+            <!-- 월: 달력 카드 -->
+            <LinearLayout
+                android:id="@+id/month_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_month_card"
+                android:orientation="vertical"
+                android:paddingHorizontal="10dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="10dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="2dp"
+                    android:paddingBottom="6dp">
+
+                    <TextView
+                        android:id="@+id/btn_prev_month"
+                        android:layout_width="20dp"
+                        android:layout_height="24dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/plan_prev_month"
+                        android:gravity="center"
+                        android:text="‹"
+                        android:textColor="@color/oreum_ink3"
+                        android:textSize="18sp" />
+
+                    <TextView
+                        android:id="@+id/text_month"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:textColor="@color/oreum_dark_text"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        tools:text="2026년 11월" />
+
+                    <TextView
+                        android:id="@+id/btn_next_month"
+                        android:layout_width="20dp"
+                        android:layout_height="24dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/plan_next_month"
+                        android:gravity="center"
+                        android:text="›"
+                        android:textColor="@color/oreum_ink3"
+                        android:textSize="18sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/month_weekdays"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" />
+
+                <LinearLayout
+                    android:id="@+id/month_grid"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <TextView
+                    android:id="@+id/text_month_sum"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="4dp"
+                    android:layout_marginTop="6dp"
+                    android:gravity="end"
+                    android:textColor="@color/oreum_ink3"
+                    android:textSize="12sp"
+                    tools:text="이번 달 계획 21개 · 완료 8개" />
+            </LinearLayout>
+
+            <!-- 선택한 날 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_day_card"
+                android:orientation="vertical"
+                android:paddingStart="16dp"
+                android:paddingTop="16dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="8dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/text_day_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/oreum_dark_text"
+                        android:textSize="19sp"
+                        android:textStyle="bold"
+                        tools:text="11월 5일 목요일" />
+
+                    <TextView
+                        android:id="@+id/text_today"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_today_pill"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="2dp"
+                        android:text="@string/plan_today"
+                        android:textColor="@color/oreum_today_green"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/text_day_meta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/oreum_ink2"
+                    android:textSize="12sp"
+                    tools:text="2개 · 3시간 30분 / 가능 6시간 · 43% 완료" />
+
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/progress_day"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:max="100"
+                    app:indicatorColor="@color/oreum_forest_mint"
+                    app:trackColor="#121F2D2A"
+                    app:trackCornerRadius="2dp"
+                    app:trackStopIndicatorSize="0dp"
+                    app:trackThickness="4dp" />
+
+                <TextView
+                    android:id="@+id/text_over"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:textColor="@color/oreum_coral_ink"
+                    android:textSize="11.5sp"
+                    android:textStyle="bold"
+                    android:visibility="gone" />
+
+                <!-- 타임라인 (코드에서 item_timeline_task로 채움) -->
+                <LinearLayout
+                    android:id="@+id/timeline"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:orientation="vertical" />
+
+                <TextView
+                    android:id="@+id/text_day_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:paddingVertical="18dp"
+                    android:text="@string/plan_day_empty"
+                    android:textColor="@color/oreum_ink3"
+                    android:textSize="13sp"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/btn_log"
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_log_button"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_clock"
+                    app:tint="@color/oreum_dark_text" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="@string/plan_log_button"
+                    android:textColor="@color/oreum_dark_text"
+                    android:textSize="13.5sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</FrameLayout>

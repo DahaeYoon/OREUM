@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- STEP 2 목표 (프로토타입 g4): 계절 산 배경 · 상단 제목 바 · 진행 중/완료 · 기간 탭 · 반투명 목표 카드 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/bg_mountain"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="centerCrop"
+        tools:src="@drawable/bg_mountain_autumn" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_auth_scrim" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- 상단 제목 바 -->
+        <LinearLayout
+            android:id="@+id/appbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_appbar"
+            android:gravity="center_vertical"
+            android:minHeight="56dp"
+            android:orientation="horizontal"
+            android:paddingHorizontal="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/nav_study"
+                android:textAppearance="@style/TextAppearance.OREUM.ScreenTitle" />
+        </LinearLayout>
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="24dp">
+
+                <!-- 진행 중 · 완료 + 새 목표 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:id="@+id/seg_status"
+                        android:layout_width="0dp"
+                        android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_seg_track"
+                        android:orientation="horizontal"
+                        android:padding="3dp">
+
+                        <TextView
+                            android:id="@+id/status_active"
+                            style="@style/Widget.OREUM.SegItem"
+                            tools:text="진행 중 4" />
+
+                        <TextView
+                            android:id="@+id/status_done"
+                            style="@style/Widget.OREUM.SegItem"
+                            tools:text="완료 1" />
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_add"
+                        style="@style/Widget.OREUM.Button.SheetPrimary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:layout_marginStart="8dp"
+                        android:minHeight="38dp"
+                        android:paddingHorizontal="12dp"
+                        android:text="@string/study_add"
+                        android:textSize="13sp"
+                        app:icon="@drawable/ic_add"
+                        app:iconPadding="4dp"
+                        app:iconSize="16dp"
+                        app:iconTint="@color/white" />
+                </LinearLayout>
+
+                <!-- 기간 탭 -->
+                <LinearLayout
+                    android:id="@+id/tabs_period"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="4dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="10dp">
+
+                    <TextView
+                        android:id="@+id/period_all"
+                        style="@style/Widget.OREUM.TabItem"
+                        android:text="@string/study_filter_all" />
+
+                    <TextView
+                        android:id="@+id/period_daily"
+                        style="@style/Widget.OREUM.TabItem"
+                        tools:text="일일" />
+
+                    <TextView
+                        android:id="@+id/period_weekly"
+                        style="@style/Widget.OREUM.TabItem"
+                        tools:text="주간" />
+
+                    <TextView
+                        android:id="@+id/period_monthly"
+                        style="@style/Widget.OREUM.TabItem"
+                        tools:text="월간" />
+                </LinearLayout>
+
+                <!-- 계획이 필요한 목표 안내 -->
+                <TextView
+                    android:id="@+id/text_note"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginBottom="8dp"
+                    android:drawablePadding="6dp"
+                    android:gravity="center_vertical"
+                    android:textColor="#A27A24"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    app:drawableStartCompat="@drawable/ic_spark"
+                    app:drawableTint="#A27A24"
+                    tools:text="계획이 필요한 목표가 1개 있어요"
+                    tools:visibility="visible" />
+
+                <!-- 목표 카드는 코드에서 item_goal_card로 채워요 -->
+                <LinearLayout
+                    android:id="@+id/goal_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <LinearLayout
+                    android:id="@+id/group_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_empty_card"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="28dp"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <TextView
+                        android:id="@+id/text_empty"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:textColor="@color/oreum_ink2"
+                        android:textSize="13sp"
+                        tools:text="@string/study_empty_first" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_empty_add"
+                        style="@style/Widget.OREUM.Button.SheetOutline"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:text="@string/study_empty_add" />
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+    </LinearLayout>
+</FrameLayout>

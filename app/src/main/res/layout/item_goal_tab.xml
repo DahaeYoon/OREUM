@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 계획 화면 목표 탭 한 칸 (전체 · 목표 이름) -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/Widget.OREUM.TabItem"
+    android:maxLines="1" />
