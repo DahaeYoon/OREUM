@@ -4,7 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.oreum.data.model.Goal
-import com.example.oreum.data.model.PlanDraft
+import com.example.oreum.data.model.RoadmapDraft
+import com.example.oreum.data.model.StudyRound
 import com.example.oreum.data.repository.StudyRepository
 import com.example.oreum.data.repository.StudyRepositoryProvider
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,42 +17,43 @@ import java.time.LocalDate
 
 data class PlanReviewUiState(
     val goal: Goal? = null,
-    val draft: PlanDraft? = null,
-    /** 펼친 주 차 (1부터) */
-    val openWeeks: Set<Int> = setOf(1),
+    val draft: RoadmapDraft? = null,
+    /** 범위를 펼친 로드맵 단계 index */
+    val openStages: Set<Int> = emptySet(),
+    /** 학습 방법 · 완료 기준 펼침 */
+    val foldOpen: Boolean = false,
 )
 
-/** AI 계획 생성 결과 확인 · 수정 · 재생성 · 승인 */
+/** AI 로드맵 · 1구간 계획 확인 · 항목 수정 · 재생성 · 승인 (시뮬레이션) */
 class PlanReviewViewModel(
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
     private val repository: StudyRepository = StudyRepositoryProvider.instance
     val goalId: String = savedStateHandle.get<String>(ARG_GOAL_ID).orEmpty()
-    private val openWeeks = MutableStateFlow(setOf(1))
+    private val openStages = MutableStateFlow(emptySet<Int>())
+    private val foldOpen = MutableStateFlow(false)
 
     val uiState: StateFlow<PlanReviewUiState> =
-        combine(repository.goals, repository.drafts, openWeeks) { goals, drafts, open ->
-            PlanReviewUiState(goal = goals.firstOrNull { it.id == goalId }, draft = drafts[goalId], openWeeks = open)
+        combine(repository.goals, repository.roadmapDrafts, openStages, foldOpen) { goals, drafts, open, fold ->
+            PlanReviewUiState(goal = goals.firstOrNull { it.id == goalId }, draft = drafts[goalId], openStages = open, foldOpen = fold)
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), PlanReviewUiState())
 
-    fun toggleWeek(week: Int) {
-        openWeeks.value = if (week in openWeeks.value) openWeeks.value - week else openWeeks.value + week
+    private fun today() = LocalDate.now().toEpochDay()
+
+    fun toggleStage(index: Int) {
+        openStages.value = if (index in openStages.value) openStages.value - index else openStages.value + index
     }
 
-    /** 다시 생성: 직접 고친 내용은 사라져요 */
-    fun regenerate() {
-        PlanDrafts.generateFor(goalId, repository)
+    fun toggleFold() {
+        foldOpen.value = !foldOpen.value
     }
 
-    /** 승인하고 적용: 적용한 항목 수 */
-    fun approve(): Int = repository.approveDraft(goalId, LocalDate.now().toEpochDay())
+    /** 재생성: 로드맵은 그대로, 1구간 구성만 바뀌어요 (직접 고친 항목은 사라짐) */
+    fun regenerate(): RoadmapDraft? = repository.regenerateRoadmap(goalId, today())
 
-    /** 지금 남아 있는 (오늘 이후 · 미완료) 할 일이 있으면 승인 시 새 계획으로 바뀐다고 알려 줘요 */
-    fun hasRemainingTasks(): Boolean {
-        val today = LocalDate.now().toEpochDay()
-        return repository.tasks.value.any { it.goalId == goalId && !it.isDone && (it.plannedDate ?: 0) >= today }
-    }
+    /** 승인하고 시작: 1구간이 바로 진행 중이 돼요 */
+    fun approve(): StudyRound? = repository.approveRoadmap(goalId, today())
 
     companion object {
         const val ARG_GOAL_ID = "goalId"

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- STEP 3 AI 계획 생성 결과: 요약 · 경고 · 주 차별 항목 · 재생성 / 나중에 / 승인하고 적용 -->
+<!-- AI 로드맵 · 1구간 계획 (시뮬레이션): 요약 숫자 · 전체 로드맵 · 1구간 할 일 · 재생성 / 나중에 / 승인하고 시작 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -52,9 +52,9 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/plan_review_title"
+                    android:text="@string/round_review_title"
                     android:textAppearance="@style/TextAppearance.OREUM.ScreenTitle"
-                    android:textSize="21sp" />
+                    android:textSize="19sp" />
             </LinearLayout>
 
             <TextView
@@ -75,175 +75,345 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
+                <!-- 목표 이름 · 마감 -->
                 <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_ai_tag"
+                        android:paddingHorizontal="9dp"
+                        android:paddingVertical="2dp"
+                        android:text="@string/ai_tag_simulation"
+                        android:textColor="@color/oreum_brand_blue"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/bg_badge"
+                        android:paddingHorizontal="9dp"
+                        android:paddingVertical="2dp"
+                        android:text="@string/round_review_waiting"
+                        android:textColor="@color/oreum_forest_deep"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/text_goal_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
+                    android:breakStrategy="balanced"
+                    android:textColor="@color/oreum_dark_text"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    tools:text="정보처리기사 필기 합격" />
+
+                <TextView
+                    android:id="@+id/text_goal_meta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/oreum_ink3"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    tools:text="마감 11/29 · D-24" />
+
+                <!-- 숫자 3개: 로드맵 단계 · 전체 학습량 · 남은 기간 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
                     android:background="@drawable/bg_glass_card"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    android:orientation="horizontal"
+                    android:paddingVertical="12dp">
 
                     <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/text_stages"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/oreum_dark_text"
+                            android:textSize="17sp"
+                            android:textStyle="bold"
+                            tools:text="6단계" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/round_review_kpi_roadmap"
+                            android:textColor="@color/oreum_ink3"
+                            android:textSize="11.5sp" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="#1A3E8E7A" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/text_total"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:maxLines="1"
+                            android:textColor="@color/oreum_dark_text"
+                            android:textSize="17sp"
+                            android:textStyle="bold"
+                            tools:text="45시간" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/round_review_kpi_total"
+                            android:textColor="@color/oreum_ink3"
+                            android:textSize="11.5sp" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="1dp"
+                        android:layout_height="match_parent"
+                        android:background="#1A3E8E7A" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/text_days"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="@color/oreum_dark_text"
+                            android:textSize="17sp"
+                            android:textStyle="bold"
+                            tools:text="24일" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/round_review_kpi_days"
+                            android:textColor="@color/oreum_ink3"
+                            android:textSize="11.5sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- 전체 로드맵 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:gravity="bottom"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="2dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/round_review_roadmap"
+                        android:textColor="@color/oreum_dark_text"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:text="@string/round_review_roadmap_hint"
+                        android:textColor="@color/oreum_ink3"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/stage_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_glass_card"
+                    android:divider="@drawable/divider_row"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="4dp"
+                    android:showDividers="middle" />
+
+                <!-- 1구간 할 일 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:gravity="bottom"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="2dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/round_review_first"
+                        android:textColor="@color/oreum_dark_text"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/text_round_minutes"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/oreum_ink3"
+                        android:textSize="12sp"
+                        tools:text="예상 2시간" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_glass_card"
+                    android:orientation="vertical"
+                    android:padding="14dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
                         android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:background="@drawable/bg_ai_tag"
-                            android:paddingHorizontal="9dp"
+                            android:background="@drawable/bg_stage_num_cur_pill"
+                            android:paddingHorizontal="8dp"
                             android:paddingVertical="2dp"
-                            android:text="@string/ai_tag_simulation"
-                            android:textColor="@color/oreum_brand_blue"
+                            android:text="@string/round_review_first_badge"
+                            android:textColor="@android:color/white"
                             android:textSize="11sp"
                             android:textStyle="bold" />
 
                         <TextView
+                            android:id="@+id/text_round_topic"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_weight="1"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:textColor="@color/oreum_dark_text"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            tools:text="요구사항 분석" />
+
+                        <TextView
+                            android:id="@+id/text_variant"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="6dp"
                             android:background="@drawable/bg_badge"
-                            android:paddingHorizontal="9dp"
-                            android:paddingVertical="2dp"
-                            android:text="@string/study_plan_draft"
+                            android:paddingHorizontal="8dp"
+                            android:paddingVertical="3dp"
                             android:textColor="@color/oreum_forest_deep"
                             android:textSize="11sp"
+                            android:textStyle="bold"
+                            tools:text="기본 구성" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/item_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:divider="@drawable/divider_row"
+                        android:orientation="vertical"
+                        android:showDividers="middle" />
+
+                    <TextView
+                        android:id="@+id/btn_add_item"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:drawablePadding="4dp"
+                        android:gravity="center_vertical"
+                        android:paddingVertical="8dp"
+                        android:text="@string/round_review_add_item"
+                        android:textColor="@color/oreum_forest_deep"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        app:drawableStartCompat="@drawable/ic_add"
+                        app:drawableTint="@color/oreum_forest_deep" />
+
+                    <!-- 학습 방법 · 완료 기준 (접기) -->
+                    <LinearLayout
+                        android:id="@+id/btn_fold"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:background="@drawable/bg_fold_row"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="11dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/round_review_fold"
+                            android:textColor="@color/oreum_ink2"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
+
+                        <ImageView
+                            android:id="@+id/icon_fold"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_expand_more"
+                            app:tint="@color/oreum_ink3" />
                     </LinearLayout>
 
                     <TextView
-                        android:id="@+id/text_goal_title"
+                        android:id="@+id/text_fold"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:textColor="@color/oreum_dark_text"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        tools:text="리눅스마스터 시험 범위 학습" />
-
-                    <TextView
-                        android:id="@+id/text_goal_meta"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:textAppearance="@style/TextAppearance.OREUM.Caption"
-                        tools:text="11/12 ~ 12/9 · 4주 · 기초 · 평일 2시간 · 주말 3시간 · 우선순위 높음" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:orientation="horizontal">
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        
-                        android:background="@drawable/bg_kpi"
-                        android:orientation="vertical"
-                        android:paddingHorizontal="10dp"
-                        android:paddingVertical="8dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:maxLines="1"
-                            android:text="@string/plan_review_needed"
-                            android:textAppearance="@style/TextAppearance.OREUM.Caption"
-                            android:textSize="11sp" />
-
-                        <TextView
-                            android:id="@+id/text_needed"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:maxLines="1"
-                            android:textColor="@color/oreum_dark_text"
-                            android:textSize="15sp"
-                            android:textStyle="bold"
-                            tools:text="40시간" />
-                    </LinearLayout>
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="6dp"
-                        android:background="@drawable/bg_kpi"
-                        android:orientation="vertical"
-                        android:paddingHorizontal="10dp"
-                        android:paddingVertical="8dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:maxLines="1"
-                            android:text="@string/plan_review_planned"
-                            android:textAppearance="@style/TextAppearance.OREUM.Caption"
-                            android:textSize="11sp" />
-
-                        <TextView
-                            android:id="@+id/text_planned"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:maxLines="1"
-                            android:textColor="@color/oreum_dark_text"
-                            android:textSize="15sp"
-                            android:textStyle="bold"
-                            tools:text="40시간" />
-                    </LinearLayout>
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="6dp"
-                        android:background="@drawable/bg_kpi"
-                        android:orientation="vertical"
-                        android:paddingHorizontal="10dp"
-                        android:paddingVertical="8dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:maxLines="1"
-                            android:text="@string/plan_review_capacity"
-                            android:textAppearance="@style/TextAppearance.OREUM.Caption"
-                            android:textSize="11sp" />
-
-                        <TextView
-                            android:id="@+id/text_capacity"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:maxLines="1"
-                            android:textColor="@color/oreum_dark_text"
-                            android:textSize="15sp"
-                            android:textStyle="bold"
-                            tools:text="40시간" />
-                    </LinearLayout>
-                    </LinearLayout>
+                        android:lineSpacingMultiplier="1.25"
+                        android:paddingHorizontal="4dp"
+                        android:textColor="@color/oreum_ink2"
+                        android:textSize="12.5sp"
+                        android:visibility="gone"
+                        tools:text="학습 방법\n· 개념 정리 → 예제 → 확인 퀴즈 순서로 진행"
+                        tools:visibility="visible" />
                 </LinearLayout>
-
-                <!-- 경고 · 페이스 반영 안내 (코드에서 채움) -->
-                <LinearLayout
-                    android:id="@+id/notice_list"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical" />
-
-                <!-- 주 차별 항목 (코드에서 채움) -->
-                <LinearLayout
-                    android:id="@+id/week_list"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
+                    android:layout_marginTop="14dp"
                     android:gravity="center"
-                    android:text="@string/plan_review_hint"
-                    android:textAppearance="@style/TextAppearance.OREUM.Caption" />
+                    android:text="@string/round_review_note"
+                    android:textColor="@color/oreum_ink3"
+                    android:textSize="12sp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -258,7 +428,12 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:paddingHorizontal="4dp"
-                        android:text="@string/plan_review_regen" />
+                        android:text="@string/plan_review_regen"
+                        app:icon="@drawable/ic_spark"
+                        app:iconGravity="textStart"
+                        app:iconPadding="4dp"
+                        app:iconSize="16dp"
+                        app:iconTint="@color/oreum_dark_text" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_later"
@@ -279,8 +454,13 @@
                         android:layout_weight="1.6"
                         android:minHeight="48dp"
                         android:paddingHorizontal="4dp"
-                        android:text="@string/plan_review_approve"
-                        android:textSize="14sp" />
+                        android:text="@string/round_review_approve"
+                        android:textSize="14sp"
+                        app:icon="@drawable/ic_check"
+                        app:iconGravity="textStart"
+                        app:iconPadding="4dp"
+                        app:iconSize="17dp"
+                        app:iconTint="@color/white" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>

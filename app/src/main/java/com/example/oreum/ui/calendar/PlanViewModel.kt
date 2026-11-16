@@ -45,7 +45,7 @@ class PlanViewModel(
     private val selection = MutableStateFlow(PlanSelection())
 
     val uiState: StateFlow<PlanUiState> =
-        combine(repository.goals, repository.tasks, repository.logs, repository.drafts, selection) { goals, tasks, logs, drafts, sel ->
+        combine(repository.goals, repository.tasks, repository.logs, repository.roadmapDrafts, selection) { goals, tasks, logs, drafts, sel ->
             val active = goals.filter { it.completedAt == null }
             val user = AuthRepositoryProvider.instance.currentUser.value
             PlanUiState(

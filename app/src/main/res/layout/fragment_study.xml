@@ -99,38 +99,6 @@
                         app:iconTint="@color/white" />
                 </LinearLayout>
 
-                <!-- 기간 탭 -->
-                <LinearLayout
-                    android:id="@+id/tabs_period"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="4dp"
-                    android:paddingTop="2dp"
-                    android:paddingBottom="10dp">
-
-                    <TextView
-                        android:id="@+id/period_all"
-                        style="@style/Widget.OREUM.TabItem"
-                        android:text="@string/study_filter_all" />
-
-                    <TextView
-                        android:id="@+id/period_daily"
-                        style="@style/Widget.OREUM.TabItem"
-                        tools:text="일일" />
-
-                    <TextView
-                        android:id="@+id/period_weekly"
-                        style="@style/Widget.OREUM.TabItem"
-                        tools:text="주간" />
-
-                    <TextView
-                        android:id="@+id/period_monthly"
-                        style="@style/Widget.OREUM.TabItem"
-                        tools:text="월간" />
-                </LinearLayout>
-
                 <!-- 계획이 필요한 목표 안내 -->
                 <TextView
                     android:id="@+id/text_note"

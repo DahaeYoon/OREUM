@@ -86,7 +86,7 @@ class HomeViewModel(
     val uiState: StateFlow<HomeUiState> =
         combine(
             combine(repository.goals, repository.tasks, repository.logs) { g, t, l -> Triple(g, t, l) },
-            repository.drafts,
+            repository.roadmapDrafts,
             auth.currentUser,
             selected,
         ) { (goals, tasks, logs), drafts, user, sel0 ->
