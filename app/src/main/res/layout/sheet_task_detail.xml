@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 학습 항목 상세 팝업 (프로토타입 itemSheet): 상태 · 이름 · 정보 표 · 수정 / 기록 / 완료 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="20dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="22dp">
+
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/bg_grab" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/text_state"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_state_plain"
+            android:paddingHorizontal="9dp"
+            android:paddingVertical="3dp"
+            android:textColor="@color/oreum_ink2"
+            android:textSize="11.5sp"
+            android:textStyle="bold"
+            tools:text="예정" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:id="@+id/text_rec"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/task_rec_made"
+            android:textColor="#3E7F86"
+            android:textSize="11.5sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/text_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textColor="@color/oreum_dark_text"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        tools:text="동시성 제어 · 락 정리" />
+
+    <LinearLayout
+        android:id="@+id/info_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/bg_info_box"
+        android:orientation="vertical"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="4dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_edit"
+            style="@style/Widget.OREUM.Button.SheetOutline"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/task_edit" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_log"
+            style="@style/Widget.OREUM.Button.SheetOutline"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1"
+            android:text="@string/task_log"
+            app:icon="@drawable/ic_clock"
+            app:iconPadding="4dp"
+            app:iconSize="15dp"
+            app:iconTint="@color/oreum_dark_text" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_done"
+            style="@style/Widget.OREUM.Button.SheetPrimary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1"
+            android:text="@string/task_done"
+            app:icon="@drawable/ic_check"
+            app:iconPadding="4dp"
+            app:iconSize="17dp"
+            app:iconTint="@color/white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_undone"
+            style="@style/Widget.OREUM.Button.SheetOutline"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_weight="1"
+            android:text="@string/task_undone"
+            android:visibility="gone" />
+    </LinearLayout>
+</LinearLayout>

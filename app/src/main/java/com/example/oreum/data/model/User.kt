@@ -12,6 +12,18 @@ data class User(
     /** 평일·주말 기본 공부 가능 시간대 (위험 계산의 "빈 시간" 기준) */
     val weekdayAvailability: List<TimeRange> = emptyList(),
     val weekendAvailability: List<TimeRange> = emptyList(),
+    /** 하루 학습 가능 시간 (분): 평일 · 주말. AI 계획이 하루 분량을 정할 때 써요. */
+    val weekdayStudyMinutes: Int = 360,
+    val weekendStudyMinutes: Int = 480,
+    /** 기록 화면에서 '다음 AI 계획에 반영하기'를 누르면 저장되는 실제 페이스 (계획 대비 실제 비율). null이면 반영 안 함 */
+    val paceRatio: Float? = null,
+    /** 페이스 반영 시 한 번에 공부할 시간 (분). null이면 기본값 */
+    val paceSessionMinutes: Int? = null,
+    /** 홈 산의 남은 할 일 순서 */
+    val trailOrder: TrailOrder = TrailOrder.PLAN_DATE,
+    /** 학습 알림: 오늘 계획 알림 · 기록 알림 */
+    val notifyDailyPlan: Boolean = true,
+    val notifyLogReminder: Boolean = true,
     val createdAt: Long = 0L,
 )
 

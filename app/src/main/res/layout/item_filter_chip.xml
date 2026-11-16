@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 기록 화면 목표 칩 한 개 (전체 · 목표 이름) -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/Widget.OREUM.FilterChip" />

@@ -33,30 +33,99 @@
             app:popUpToInclusive="true" />
     </fragment>
 
-    <!-- 로그인 후: 하단 탭 5개 -->
+    <!-- 로그인 후: 하단 탭 5개 (홈 · 목표 · 계획 · 기록 · 마이) -->
     <fragment
         android:id="@+id/homeFragment"
         android:name="com.example.oreum.ui.home.HomeFragment"
         android:label="@string/nav_home"
-        tools:layout="@layout/fragment_placeholder" />
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_home_to_recovery"
+            app:destination="@id/recoveryFragment" />
+        <action
+            android:id="@+id/action_home_to_planReview"
+            app:destination="@id/planReviewFragment" />
+        <action
+            android:id="@+id/action_home_to_goalForm"
+            app:destination="@id/goalFormFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/studyFragment"
         android:name="com.example.oreum.ui.study.StudyFragment"
         android:label="@string/nav_study"
-        tools:layout="@layout/fragment_placeholder" />
+        tools:layout="@layout/fragment_study">
+        <action
+            android:id="@+id/action_study_to_goalForm"
+            app:destination="@id/goalFormFragment" />
+        <action
+            android:id="@+id/action_study_to_planReview"
+            app:destination="@id/planReviewFragment" />
+    </fragment>
 
+    <!-- 목표 만들기 · 수정 팝업 (아래에서 올라오는 시트, goalId가 있으면 수정) -->
+    <dialog
+        android:id="@+id/goalFormFragment"
+        android:name="com.example.oreum.ui.study.GoalFormFragment"
+        android:label="@string/study_form_title_new"
+        tools:layout="@layout/fragment_goal_form">
+        <argument
+            android:name="goalId"
+            android:defaultValue="@null"
+            app:argType="string"
+            app:nullable="true" />
+        <!-- 새 목표 등록 → 바로 AI 계획 생성 결과로 (입력 화면은 닫음) -->
+        <action
+            android:id="@+id/action_goalForm_to_planReview"
+            app:destination="@id/planReviewFragment"
+            app:popUpTo="@id/goalFormFragment"
+            app:popUpToInclusive="true" />
+    </dialog>
+
+    <!-- AI 계획 생성 결과 확인 · 승인 (시뮬레이션) -->
     <fragment
-        android:id="@+id/groupFragment"
-        android:name="com.example.oreum.ui.group.GroupFragment"
-        android:label="@string/nav_group"
-        tools:layout="@layout/fragment_placeholder" />
+        android:id="@+id/planReviewFragment"
+        android:name="com.example.oreum.ui.aiplan.PlanReviewFragment"
+        android:label="@string/plan_review_title"
+        tools:layout="@layout/fragment_plan_review">
+        <argument
+            android:name="goalId"
+            app:argType="string" />
+    </fragment>
 
     <fragment
         android:id="@+id/calendarFragment"
         android:name="com.example.oreum.ui.calendar.CalendarFragment"
         android:label="@string/nav_calendar"
-        tools:layout="@layout/fragment_placeholder" />
+        tools:layout="@layout/fragment_plan">
+        <action
+            android:id="@+id/action_calendar_to_planReview"
+            app:destination="@id/planReviewFragment" />
+        <action
+            android:id="@+id/action_calendar_to_recovery"
+            app:destination="@id/recoveryFragment" />
+    </fragment>
+
+    <!-- AI 학습 계획 복구 (시뮬레이션 · 승인해야 적용) -->
+    <fragment
+        android:id="@+id/recoveryFragment"
+        android:name="com.example.oreum.ui.recovery.RecoveryFragment"
+        android:label="@string/rec_title"
+        tools:layout="@layout/fragment_recovery">
+        <action
+            android:id="@+id/action_recovery_to_goalForm"
+            app:destination="@id/goalFormFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/recordsFragment"
+        android:name="com.example.oreum.ui.records.RecordsFragment"
+        android:label="@string/nav_records"
+        tools:layout="@layout/fragment_records">
+        <action
+            android:id="@+id/action_records_to_recovery"
+            app:destination="@id/recoveryFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/myPageFragment"
