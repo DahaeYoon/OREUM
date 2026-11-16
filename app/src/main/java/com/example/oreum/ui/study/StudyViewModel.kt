@@ -3,71 +3,67 @@ package com.example.oreum.ui.study
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.oreum.data.model.Goal
-import com.example.oreum.data.model.GoalPeriod
 import com.example.oreum.data.model.PlanStatus
+import com.example.oreum.data.model.RoundStatus
+import com.example.oreum.data.model.StudyRound
 import com.example.oreum.data.repository.StudyRepository
 import com.example.oreum.data.repository.StudyRepositoryProvider
-import com.example.oreum.domain.usecase.GoalProgress
+import com.example.oreum.domain.usecase.RoadmapProgress
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import java.time.LocalDate
 
-/** 목표 카드 하나에 보여 줄 내용 (프로토타입 g4 카드) */
+/** 목표 카드 하나에 보여 줄 내용: 이름 · D-day / 상태 하나 / 진행률 / 단계 · 남은 학습 */
 data class GoalCardUi(
     val goal: Goal,
-    val progress: GoalProgress.Summary,
+    val progress: RoadmapProgress.Progress,
     val completed: Boolean,
     /** 승인 대기 초안이 있으면 DRAFT */
     val planStatus: PlanStatus,
-    /** 오늘 남은 할 일 수 */
-    val todayCount: Int,
+    /** 지금 구간 (진행 중 · 시작 전) */
+    val current: StudyRound?,
+    /** AI 다음 구간 추천이 도착함 */
+    val hasProposal: Boolean,
 )
 
 data class StudyUiState(
-    /** null = 전체 */
-    val period: GoalPeriod? = null,
     val showCompleted: Boolean = false,
     val activeCount: Int = 0,
     val completedCount: Int = 0,
-    /** 계획이 필요한 (계획 전 · 승인 대기) 진행 중 목표 수 */
+    /** 로드맵이 필요한 (로드맵 전 · 승인 대기) 진행 중 목표 수 */
     val needPlanCount: Int = 0,
     val cards: List<GoalCardUi> = emptyList(),
 )
-
-private data class StudyFilter(val period: GoalPeriod?, val showCompleted: Boolean)
 
 class StudyViewModel(
     private val repository: StudyRepository = StudyRepositoryProvider.instance,
 ) : ViewModel() {
 
-    private val filter = MutableStateFlow(StudyFilter(period = null, showCompleted = false))
+    private val showCompleted = MutableStateFlow(false)
 
     val uiState: StateFlow<StudyUiState> =
-        combine(repository.goals, repository.tasks, repository.drafts, filter) { goals, tasks, drafts, f ->
-            val today = LocalDate.now().toEpochDay()
+        combine(repository.goals, repository.rounds, repository.roadmapDrafts, repository.proposals, showCompleted) { goals, rounds, drafts, proposals, showDone ->
             val all = goals.map { goal ->
                 GoalCardUi(
                     goal = goal,
-                    progress = GoalProgress.of(goal.id, tasks),
-                    completed = GoalProgress.isCompleted(goal, tasks),
+                    progress = RoadmapProgress.of(goal, rounds),
+                    completed = goal.completedAt != null,
                     planStatus = if (drafts.containsKey(goal.id)) PlanStatus.DRAFT else goal.planStatus,
-                    todayCount = tasks.count { it.goalId == goal.id && it.plannedDate == today && !it.isDone && !it.carriedOver },
+                    current = rounds.filter { it.goalId == goal.id && it.status != RoundStatus.DONE }.maxByOrNull { it.no },
+                    hasProposal = proposals.containsKey(goal.id),
                 )
             }
             val active = all.filterNot { it.completed }
             val done = all.filter { it.completed }
-            val cards = (if (f.showCompleted) done else active)
-                .filter { f.period == null || it.goal.period == f.period }
+            val cards = (if (showDone) done else active)
                 .sortedWith(
-                    if (f.showCompleted) compareByDescending<GoalCardUi> { it.goal.dueAt }
+                    if (showDone) compareByDescending<GoalCardUi> { it.goal.completedAt }
                     else compareBy<GoalCardUi> { it.goal.dueAt }.thenBy { it.goal.priority },
                 )
             StudyUiState(
-                period = f.period,
-                showCompleted = f.showCompleted,
+                showCompleted = showDone,
                 activeCount = active.size,
                 completedCount = done.size,
                 needPlanCount = active.count { it.planStatus != PlanStatus.APPROVED },
@@ -75,11 +71,7 @@ class StudyViewModel(
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), StudyUiState())
 
-    fun setPeriod(period: GoalPeriod?) {
-        filter.value = filter.value.copy(period = period)
-    }
-
     fun setShowCompleted(completed: Boolean) {
-        filter.value = filter.value.copy(showCompleted = completed)
+        showCompleted.value = completed
     }
 }

@@ -14,7 +14,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.oreum.R
 import com.example.oreum.data.model.GoalLevel
-import com.example.oreum.data.model.GoalPeriod
 import com.example.oreum.databinding.FragmentGoalFormBinding
 import com.example.oreum.ui.auth.setTextIfChanged
 import com.example.oreum.ui.common.GlassSheetFragment
@@ -34,7 +33,6 @@ class GoalFormFragment : GlassSheetFragment() {
     private val binding get() = checkNotNull(_binding)
     private val viewModel: GoalFormViewModel by viewModels()
 
-    private val periods = listOf(GoalPeriod.DAILY, GoalPeriod.WEEKLY, GoalPeriod.MONTHLY)
     private val levels = listOf(GoalLevel.BEGINNER, GoalLevel.INTERMEDIATE, GoalLevel.ADVANCED)
     private val priorities = listOf(1, 2, 3)
 
@@ -46,9 +44,6 @@ class GoalFormFragment : GlassSheetFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.periodDaily.text = getString(R.string.study_card_meta_period, GoalPeriod.DAILY.label)
-        binding.periodWeekly.text = getString(R.string.study_card_meta_period, GoalPeriod.WEEKLY.label)
-        binding.periodMonthly.text = getString(R.string.study_card_meta_period, GoalPeriod.MONTHLY.label)
         binding.levelBeginner.text = GoalLevel.BEGINNER.label
         binding.levelIntermediate.text = GoalLevel.INTERMEDIATE.label
         binding.levelAdvanced.text = GoalLevel.ADVANCED.label
@@ -61,7 +56,6 @@ class GoalFormFragment : GlassSheetFragment() {
         binding.inputTitle.doAfterTextChanged { viewModel.onTitleChanged(it?.toString().orEmpty()) }
         binding.inputDesc.doAfterTextChanged { viewModel.onDescriptionChanged(it?.toString().orEmpty()) }
 
-        binding.segPeriod.onChildClick { viewModel.setPeriod(periods[it]) }
         binding.segLevel.onChildClick { viewModel.setLevel(levels[it]) }
         binding.segPriority.onChildClick { viewModel.setPriority(priorities[it]) }
 
@@ -87,7 +81,6 @@ class GoalFormFragment : GlassSheetFragment() {
         binding.inputDesc.setTextIfChanged(state.description)
         binding.textTitleError.isVisible = state.titleError != null
 
-        binding.segPeriod.selectChild(periods.indexOf(state.period))
         binding.segLevel.selectChild(levels.indexOf(state.level))
         binding.segPriority.selectChild(priorities.indexOf(state.priority))
 

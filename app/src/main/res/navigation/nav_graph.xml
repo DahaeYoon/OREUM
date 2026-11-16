@@ -33,7 +33,7 @@
             app:popUpToInclusive="true" />
     </fragment>
 
-    <!-- 로그인 후: 하단 탭 5개 (홈 · 목표 · 계획 · 기록 · 마이) -->
+    <!-- 로그인 후: 하단 탭 4개 (홈 · 목표 · 기록 · 마이) -->
     <fragment
         android:id="@+id/homeFragment"
         android:name="com.example.oreum.ui.home.HomeFragment"
@@ -60,6 +60,26 @@
             app:destination="@id/goalFormFragment" />
         <action
             android:id="@+id/action_study_to_planReview"
+            app:destination="@id/planReviewFragment" />
+        <action
+            android:id="@+id/action_study_to_goalDetail"
+            app:destination="@id/goalDetailFragment" />
+    </fragment>
+
+    <!-- 목표 상세 (계획 탭 대신): 이번 구간 · 로드맵 · 이전 구간 -->
+    <fragment
+        android:id="@+id/goalDetailFragment"
+        android:name="com.example.oreum.ui.study.GoalDetailFragment"
+        android:label="@string/goal_detail_title"
+        tools:layout="@layout/fragment_goal_detail">
+        <argument
+            android:name="goalId"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_goalDetail_to_goalForm"
+            app:destination="@id/goalFormFragment" />
+        <action
+            android:id="@+id/action_goalDetail_to_planReview"
             app:destination="@id/planReviewFragment" />
     </fragment>
 
@@ -93,6 +113,7 @@
             app:argType="string" />
     </fragment>
 
+    <!-- 예전 계획(캘린더) 화면: 하단 탭에서 뺐어요. 7단계에서 코드와 함께 지워요 -->
     <fragment
         android:id="@+id/calendarFragment"
         android:name="com.example.oreum.ui.calendar.CalendarFragment"

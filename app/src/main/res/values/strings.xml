@@ -83,8 +83,8 @@
 
     <string name="study_status_count">%1$s %2$d</string>
     <string name="study_note_need">계획이 필요한 목표가 %1$d개 있어요</string>
-    <string name="study_do_make">AI 계획 만들기</string>
-    <string name="study_do_review">계획 확인 · 승인</string>
+    <string name="study_do_make">AI 로드맵 만들기</string>
+    <string name="study_do_review">로드맵 확인 · 승인</string>
     <string name="study_today_count">오늘 %1$d개</string>
     <string name="study_remaining">남은 학습 %1$s</string>
     <string name="study_dday_done">완료</string>
@@ -99,7 +99,7 @@
     <string name="study_detail_priority_label">우선순위</string>
     <string name="study_detail_plan_label">계획</string>
     <string name="study_detail_plan_none">아직 없음</string>
-    <string name="study_detail_plan_draft">AI 생성 결과 승인 대기</string>
+    <string name="study_detail_plan_draft">AI 로드맵 승인 대기</string>
     <string name="study_detail_plan_approved">승인됨 · 학습 항목 %1$d개</string>
     <string name="study_detail_gen">AI 계획 생성</string>
     <string name="study_detail_review">생성 결과 보기</string>
@@ -175,7 +175,7 @@
     <string name="toast_plan_regen">계획을 다시 생성했어요</string>
     <string name="toast_plan_later">승인 대기로 남겨 두었어요 · 목표 화면에서 다시 볼 수 있어요</string>
     <string name="toast_plan_approved">계획을 승인했어요 · 계획 탭과 홈에 반영돼요</string>
-    <string name="toast_goal_added_plan">목표를 등록했어요 · AI가 계획을 만들었어요 (시뮬레이션)</string>
+    <string name="toast_goal_added_plan">목표를 등록했어요 · AI가 로드맵을 만들었어요 (시뮬레이션)</string>
     <string name="study_detail_make_plan">AI 계획 만들기</string>
     <string name="study_detail_review_plan">AI 계획 확인 · 승인</string>
 
@@ -430,4 +430,68 @@
     <string name="home_slot_est">예상 소요시간</string>
     <string name="home_slot_done_day">완료한 날</string>
     <string name="home_undo">완료 취소</string>
+    <!-- 구간 기반 학습 (1차): AI 로드맵 · 1구간 계획 -->
+    <string name="round_review_title">AI 로드맵 · 1구간 계획</string>
+    <string name="round_review_waiting">승인 대기</string>
+    <string name="round_review_meta">마감 %1$s · %2$s</string>
+    <string name="round_review_stages">%1$d단계</string>
+    <string name="round_review_days">%1$d일</string>
+    <string name="round_review_kpi_roadmap">로드맵</string>
+    <string name="round_review_kpi_total">전체 학습량</string>
+    <string name="round_review_kpi_days">남은 기간</string>
+    <string name="round_review_roadmap">전체 로드맵</string>
+    <string name="round_review_roadmap_hint">눌러서 범위 보기</string>
+    <string name="round_review_first">1구간 할 일</string>
+    <string name="round_review_first_badge">1구간</string>
+    <string name="round_review_est">예상 %1$s</string>
+    <string name="round_review_add_item">항목 추가</string>
+    <string name="round_review_fold">학습 방법 · 완료 기준</string>
+    <string name="round_review_method">학습 방법</string>
+    <string name="round_review_criteria">완료 기준</string>
+    <string name="round_review_note">날짜 없이 구간으로 진행해요 · 2구간부터는 결과를 보고 다시 추천해요</string>
+    <string name="round_review_approve">승인하고 시작</string>
+    <string name="round_regen_title">1구간을 다른 구성으로 만들까요?</string>
+    <string name="round_regen_body">직접 고친 1구간 항목은 사라져요. 로드맵은 그대로예요.</string>
+    <string name="toast_round_regen">1구간을 ‘%1$s’로 다시 만들었어요 (시뮬레이션)</string>
+    <string name="round_approve_title">이 로드맵으로 시작할까요?</string>
+    <string name="round_approve_body">%1$d단계 로드맵과 1구간 계획(항목 %2$d개)을 적용해요. 날짜별 일정은 만들지 않아요.</string>
+    <string name="toast_round_approved">1구간을 시작해요 · 홈에 반영됐어요</string>
+    <!-- 구간 기반 학습 (1차): 목표 탭 · 목표 상세 -->
+    <string name="study_note_need_roadmap">로드맵이 필요한 목표가 %1$d개 있어요</string>
+    <string name="study_state_top">정상 도착</string>
+    <string name="study_state_proposal">다음 구간 추천</string>
+    <string name="study_state_active">%1$d구간 진행 중</string>
+    <string name="study_state_ready">%1$d구간 시작 전</string>
+    <string name="study_sub_roadmap">%1$d/%2$d단계 · 남은 학습 %3$s</string>
+    <string name="round_percent">%1$d%%</string>
+    <string name="round_count">%1$d개</string>
+    <string name="round_no">%1$d구간</string>
+    <string name="round_badge_two_line">%1$d\n구간</string>
+    <string name="round_status_active">진행 중</string>
+    <string name="round_status_ready">시작 전</string>
+    <string name="round_sum">%1$d/%2$d · %3$s</string>
+    <string name="round_kind_carry">이어서</string>
+    <string name="round_kind_review">복습</string>
+    <string name="round_item_check">%1$s 완료</string>
+    <string name="round_start">%1$d구간 시작</string>
+    <string name="round_done_count">%1$d/%2$d</string>
+    <string name="round_date_span">%1$s~%2$s · %3$d일</string>
+    <string name="toast_round_started">%1$d구간을 시작해요</string>
+    <string name="toast_round_all_done">%1$d구간 항목을 모두 마쳤어요</string>
+    <string name="goal_detail_title">목표 상세</string>
+    <string name="goal_detail_edit">목표 수정</string>
+    <string name="goal_detail_delete">목표 삭제</string>
+    <string name="goal_detail_meta_done">정상 도착 %1$s</string>
+    <string name="goal_detail_draft_title">AI 로드맵 승인 대기</string>
+    <string name="goal_detail_draft_body">로드맵과 1구간 계획을 확인하고 승인하면 시작돼요.</string>
+    <string name="goal_detail_none_title">아직 로드맵이 없어요</string>
+    <string name="goal_detail_none_body">AI가 전체 로드맵과 1구간 계획을 만들어요. 승인하기 전에는 적용되지 않아요.</string>
+    <string name="goal_detail_make">AI 로드맵 만들기</string>
+    <string name="goal_detail_proposal_title">AI 다음 구간 추천이 도착했어요</string>
+    <string name="goal_detail_proposal_body">%1$d구간 · %2$s · 항목 %3$d개</string>
+    <string name="goal_detail_proposal_final">로드맵을 모두 마쳤어요 · 승인하면 정상 도착이에요</string>
+    <string name="goal_detail_here">지금 여기</string>
+    <string name="goal_detail_due_title">마감까지 %1$s</string>
+    <string name="goal_detail_due_body">남은 학습 %1$s · %2$d일 남음</string>
+    <string name="goal_detail_history">이전 구간</string>
 </resources>

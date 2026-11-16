@@ -13,8 +13,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.oreum.R
-import com.example.oreum.data.model.GoalPeriod
 import com.example.oreum.data.model.PlanStatus
+import com.example.oreum.data.model.RoundStatus
 import com.example.oreum.data.repository.StudyRepositoryProvider
 import com.example.oreum.databinding.FragmentStudyBinding
 import com.example.oreum.databinding.ItemGoalCardBinding
@@ -28,15 +28,12 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
-/** STEP 2 목표 (프로토타입 g4): 진행 중 · 완료, 기간 탭(전체 · 일일 · 주간 · 월간), 목표 카드 */
+/** 목표 탭: 진행 중 · 완료, 목표 카드 (이름 · D-day / 상태 하나 / 진행률 / 단계 · 남은 학습). 누르면 목표 상세 */
 class StudyFragment : Fragment(R.layout.fragment_study) {
 
     private var _binding: FragmentStudyBinding? = null
     private val binding get() = checkNotNull(_binding)
     private val viewModel: StudyViewModel by viewModels()
-
-    /** 기간 탭 순서: 전체 · 일일 · 주간 · 월간 */
-    private val periods = listOf(null, GoalPeriod.DAILY, GoalPeriod.WEEKLY, GoalPeriod.MONTHLY)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -44,14 +41,10 @@ class StudyFragment : Fragment(R.layout.fragment_study) {
 
         binding.bgMountain.setImageResource(Season.of().mountainBackground)
         binding.appbar.applySystemBarsPadding(top = true, bottom = false)
-        binding.periodDaily.text = GoalPeriod.DAILY.label
-        binding.periodWeekly.text = GoalPeriod.WEEKLY.label
-        binding.periodMonthly.text = GoalPeriod.MONTHLY.label
 
         binding.btnAdd.setOnClickListener { openForm(goalId = null) }
         binding.btnEmptyAdd.setOnClickListener { openForm(goalId = null) }
         binding.segStatus.onChildClick { viewModel.setShowCompleted(it == 1) }
-        binding.tabsPeriod.onChildClick { viewModel.setPeriod(periods[it]) }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -64,18 +57,13 @@ class StudyFragment : Fragment(R.layout.fragment_study) {
         binding.statusActive.text = countLabel(getString(R.string.study_status_active), state.activeCount)
         binding.statusDone.text = countLabel(getString(R.string.study_status_done), state.completedCount)
         binding.segStatus.selectChild(if (state.showCompleted) 1 else 0)
-        binding.tabsPeriod.selectChild(periods.indexOf(state.period))
 
         binding.textNote.isVisible = !state.showCompleted && state.needPlanCount > 0
-        binding.textNote.text = getString(R.string.study_note_need, state.needPlanCount)
+        binding.textNote.text = getString(R.string.study_note_need_roadmap, state.needPlanCount)
 
         binding.groupEmpty.isVisible = state.cards.isEmpty()
         binding.btnEmptyAdd.isVisible = !state.showCompleted
-        binding.textEmpty.text = when {
-            state.showCompleted -> getString(R.string.study_empty_done)
-            state.period != null -> getString(R.string.study_empty_period, state.period.label)
-            else -> getString(R.string.study_empty_first)
-        }
+        binding.textEmpty.text = getString(if (state.showCompleted) R.string.study_empty_done else R.string.study_empty_first)
 
         val today = LocalDate.now()
         binding.goalList.removeAllViews()
@@ -90,22 +78,33 @@ class StudyFragment : Fragment(R.layout.fragment_study) {
             item.textDday.setBackgroundResource(if (hot) R.drawable.bg_dday_hot else R.drawable.bg_dday)
             item.textDday.setTextColor(requireContext().getColor(if (hot) R.color.oreum_coral_ink else R.color.oreum_ink2))
 
-            item.textMeta.text = requireContext().goalMetaLine(
-                priority = goal.priority,
-                parts = listOf(goal.period.label, getString(R.string.study_card_due, DateText.monthDay(due))),
-                today = if (card.todayCount > 0 && !card.completed) getString(R.string.study_today_count, card.todayCount) else null,
-            )
+            // 상태 하나만: 정상 도착 · 다음 구간 추천 · n구간 진행 중 · n구간 시작 전
+            val status = when {
+                card.completed -> getString(R.string.study_state_top)
+                card.hasProposal -> getString(R.string.study_state_proposal)
+                card.current?.status == RoundStatus.ACTIVE -> getString(R.string.study_state_active, card.current.no)
+                card.current?.status == RoundStatus.READY -> getString(R.string.study_state_ready, card.current.no)
+                else -> null
+            }
+            item.textMeta.isVisible = status != null
+            item.textMeta.text = status
+            val ai = card.hasProposal
+            item.textMeta.setBackgroundResource(if (ai) R.drawable.bg_badge else R.drawable.bg_status_chip)
+            item.textMeta.setTextColor(requireContext().getColor(if (ai) R.color.oreum_forest_deep else R.color.oreum_ink2))
+
             item.progress.progress = card.progress.percent
-            item.textPercent.text = "${card.progress.percent}%"
+            item.textPercent.text = getString(R.string.round_percent, card.progress.percent)
 
-            val showRemaining = card.planStatus == PlanStatus.APPROVED && !card.completed
-            item.textSub.isVisible = showRemaining
+            val approved = card.planStatus == PlanStatus.APPROVED && !card.completed
+            item.textSub.isVisible = approved
             item.textSub.text = getString(
-                R.string.study_remaining,
-                DateText.minutes((card.progress.plannedMinutes - card.progress.doneMinutes).coerceAtLeast(0)),
+                R.string.study_sub_roadmap,
+                card.progress.doneStages,
+                card.progress.totalStages,
+                DateText.minutes((card.progress.remainingHours * 60).toInt()),
             )
 
-            // 계획 전: AI 계획 만들기 · 승인 대기: 계획 확인 · 승인
+            // 로드맵 전: AI 로드맵 만들기 · 승인 대기: 로드맵 확인 · 승인
             val needPlan = !card.completed && card.planStatus != PlanStatus.APPROVED
             item.btnDo.isVisible = needPlan
             if (needPlan) {
@@ -118,20 +117,26 @@ class StudyFragment : Fragment(R.layout.fragment_study) {
                 item.btnDo.setOnClickListener { openPlanReview(goal.id, regenerate = false) }
             }
             item.root.alpha = if (card.completed) 0.85f else 1f
-            item.main.setOnClickListener {
-                GoalDetailSheet.newInstance(goal.id).show(childFragmentManager, GoalDetailSheet.TAG)
-            }
+            item.main.setOnClickListener { openDetail(goal.id) }
             binding.goalList.addView(item.root)
         }
     }
 
-    /** "진행 중 4"에서 숫자만 작고 흐리게 (프로토타입 .num 11px · 60%) */
+    /** "진행 중 4"에서 숫자만 작고 흐리게 */
     private fun countLabel(label: String, count: Int): CharSequence {
         val text = getString(R.string.study_status_count, label, count)
         return SpannableString(text).apply {
             setSpan(RelativeSizeSpan(0.85f), label.length, text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             setSpan(android.text.style.ForegroundColorSpan(0x99526864.toInt()), label.length, text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
+    }
+
+    /** 목표 상세 화면 */
+    private fun openDetail(goalId: String) {
+        findNavController().navigate(
+            R.id.action_study_to_goalDetail,
+            Bundle().apply { putString(GoalDetailViewModel.ARG_GOAL_ID, goalId) },
+        )
     }
 
     /** 목표 만들기(goalId = null) · 수정 팝업 */
@@ -143,23 +148,16 @@ class StudyFragment : Fragment(R.layout.fragment_study) {
     }
 
     /**
-     * AI 계획 생성 결과 화면으로 이동 (시뮬레이션).
+     * AI 로드맵 · 1구간 계획 화면으로 이동 (시뮬레이션).
      * 승인 대기 초안이 있으면 그대로 보여 주고, 없거나 다시 생성이면 새로 만들어요.
      */
     fun openPlanReview(goalId: String, regenerate: Boolean) {
         val repository = StudyRepositoryProvider.instance
-        if (regenerate || repository.drafts.value[goalId] == null) PlanDrafts.generateFor(goalId, repository)
+        if (regenerate || repository.roadmapDrafts.value[goalId] == null) PlanDrafts.generateFor(goalId, repository)
         findNavController().navigate(
             R.id.action_study_to_planReview,
             Bundle().apply { putString(GoalFormViewModel.ARG_GOAL_ID, goalId) },
         )
-    }
-
-    /** 계획 탭으로 이동 (승인된 계획 보기 · 그 목표 탭이 열려요) */
-    fun openPlanTab(goalId: String) {
-        com.example.oreum.ui.calendar.PlanFocus.goalId = goalId
-        requireActivity().findViewById<com.google.android.material.bottomnavigation.BottomNavigationView>(R.id.bottom_nav)
-            ?.selectedItemId = R.id.calendarFragment
     }
 
     override fun onDestroyView() {
