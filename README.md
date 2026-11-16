@@ -27,7 +27,22 @@ com.example.oreum
 ├─ domain/usecase           # 시간 부족 계산 · 일정 재배치 · 스터디 매칭 (Firebase와 분리된 순수 Kotlin)
 └─ util/
 ```
-
 ## 개발 단계
 
 STEP 0 프로젝트 구조 + GitHub → 1 테마·로그인 → 2 홈·산 진행률 → 3 내 학습 CRUD → 4 캘린더 → 5 위험 감지 → 6 경로 재탐색·승인 → 7 그룹 → 8 스터디 모집 → 9 가입신청서 → 10 역할 분담·그룹 알림 → 11 Firestore 권한·통합 테스트
+
+---
+
+### 브랜치
+- `main` : 항상 빌드·실행되는 통합 코드. **직접 Push 금지**, Pull Request로만 병합
+- `feature/<기능>` : 기능 개발 (예: `feature/auth`, `feature/home`, `feature/calendar`)
+- 작업 시작 전 항상 `main`을 최신으로 받은 뒤 브랜치를 만들기
+- 
+### Commit 메시지 (Conventional Commits)
+```
+feat: add login screen
+fix: resolve calendar crash
+refactor: separate task repository
+docs: update project README
+chore: bump navigation version
+```
