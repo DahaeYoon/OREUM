@@ -580,4 +580,34 @@
     <string name="toast_next_later">추천은 목표 상세에 남겨 두었어요</string>
     <string name="toast_next_top">‘%1$s’ 정상에 도착했어요</string>
     <string name="goal_detail_proposal_btn">추천 확인하기</string>
+    <!-- 1차 R6: 기록 (구간 기준) -->
+    <string name="records_all_goals">전체 목표</string>
+    <string name="records_pick_title">어떤 목표의 기록을 볼까요?</string>
+    <string name="records_by_day">날짜별</string>
+    <string name="records_by_round">구간별</string>
+    <string name="records_none_title">아직 학습 기록이 없어요</string>
+    <string name="records_none_body">구간을 진행하며 공부한 시간을 기록하면 여기에 쌓여요.</string>
+    <string name="records_kpi_days">공부한 날</string>
+    <string name="records_kpi_avg_day">하루 평균</string>
+    <string name="records_kpi_completion">항목 완료율</string>
+    <string name="records_days_value">%1$d일</string>
+    <string name="records_pace_none">구간을 마치면 예상 대비 실제 시간을 알려 드려요</string>
+    <string name="records_pace_pre">"최근 %1$d구간은 예상보다 "</string>
+    <string name="records_pace_more">%1$d%% 더</string>
+    <string name="records_pace_more_post">" 걸렸어요"</string>
+    <string name="records_pace_fast">%1$d%% 빨리</string>
+    <string name="records_pace_fast_post">" 끝냈어요"</string>
+    <string name="records_pace_ok_pre">"최근 %1$d구간은 "</string>
+    <string name="records_pace_ok">예상한 시간</string>
+    <string name="records_pace_ok_post">에 맞게 하고 있어요</string>
+    <string name="records_day_month">%1$d월 · %2$s</string>
+    <string name="records_goal_round">%1$s %2$d구간</string>
+    <string name="records_round_days">" · %1$d일"</string>
+    <string name="records_day_title">%1$d월 %2$d일 (%3$s) 학습 기록</string>
+    <string name="records_day_cap2">실제 %1$s · 실제로 공부한 날짜 기준</string>
+    <string name="records_day_item_cap">%1$s · %2$d구간</string>
+    <string name="round_detail_title">%1$d구간 · %2$s</string>
+    <string name="round_detail_done">완료</string>
+    <string name="round_detail_time">실제 / 예상</string>
+    <string name="round_status_done">완료</string>
 </resources>

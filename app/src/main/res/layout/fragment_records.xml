@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- STEP 6 기록 (프로토타입 기록 화면): 목표 칩 · 일일/주간 · 요약 3칸 · 계획 대비 실제 그래프 · 학습 페이스 · 미완료 원인 · 복구 전후 · 일일 기록 -->
+<!-- 기록 (1차 · 프로토타입 기록 화면): 목표 고르기 · 날짜별/구간별 · 페이스 카드(공부한 날 · 하루 평균 · 항목 완료율 · 최근 7일 막대 · 예상 대비 실제 한 줄) · 목록 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -52,381 +52,226 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
+                android:paddingHorizontal="16dp"
                 android:paddingTop="4dp"
                 android:paddingBottom="24dp">
 
-                <!-- 목표 칩 (전체 · 목표별) -->
-                <HorizontalScrollView
+                <!-- 목표 고르기 (진한 알약) -->
+                <TextView
+                    android:id="@+id/btn_goal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:layout_marginTop="4dp"
+                    android:background="@drawable/bg_home_goal_switch"
+                    android:drawablePadding="4dp"
+                    android:ellipsize="end"
+                    android:gravity="center_vertical"
+                    android:maxLines="1"
+                    android:maxWidth="280dp"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="12dp"
+                    android:textColor="@color/white"
+                    android:textSize="13.5sp"
+                    android:textStyle="bold"
+                    app:drawableEndCompat="@drawable/ic_expand_more_13"
+                    app:drawableTint="@color/white"
+                    tools:text="전체 목표" />
+
+                <!-- 날짜별 · 구간별 -->
+                <LinearLayout
+                    android:id="@+id/seg_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="38dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_seg_track"
+                    android:orientation="horizontal"
+                    android:padding="3dp">
+
+                    <TextView
+                        style="@style/Widget.OREUM.SegItem"
+                        android:text="@string/records_by_day" />
+
+                    <TextView
+                        style="@style/Widget.OREUM.SegItem"
+                        android:text="@string/records_by_round" />
+                </LinearLayout>
+
+                <!-- 기록이 없을 때 -->
+                <LinearLayout
+                    android:id="@+id/group_empty"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:clipToPadding="false"
-                    android:paddingHorizontal="16dp"
-                    android:scrollbars="none">
+                    android:layout_marginTop="14dp"
+                    android:background="@drawable/bg_records_card"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="18dp"
+                    android:paddingVertical="28dp"
+                    android:visibility="gone">
 
-                    <LinearLayout
-                        android:id="@+id/chips_goal"
+                    <ImageView
+                        android:layout_width="26dp"
+                        android:layout_height="26dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_nav_records"
+                        app:tint="@color/oreum_ink3" />
+
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:paddingBottom="2dp" />
-                </HorizontalScrollView>
+                        android:layout_marginTop="6dp"
+                        android:text="@string/records_none_title"
+                        android:textColor="@color/oreum_dark_text"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:gravity="center"
+                        android:text="@string/records_none_body"
+                        android:textColor="@color/oreum_ink2"
+                        android:textSize="13sp" />
+                </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/group_content"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:paddingHorizontal="16dp">
+                    android:orientation="vertical">
 
-                    <!-- 일일 · 주간 -->
+                    <!-- 페이스 카드 -->
                     <LinearLayout
-                        android:id="@+id/seg_view"
-                        android:layout_width="match_parent"
-                        android:layout_height="34dp"
-                        android:layout_marginTop="8dp"
-                        android:background="@drawable/bg_seg_track_45"
-                        android:orientation="horizontal"
-                        android:padding="3dp">
-
-                        <TextView
-                            android:id="@+id/seg_day"
-                            style="@style/Widget.OREUM.SegItem"
-                            android:layout_height="28dp"
-                            android:text="@string/records_view_day"
-                            android:textSize="12.5sp" />
-
-                        <TextView
-                            android:id="@+id/seg_week"
-                            style="@style/Widget.OREUM.SegItem"
-                            android:layout_height="28dp"
-                            android:layout_marginStart="4dp"
-                            android:text="@string/records_view_week"
-                            android:textSize="12.5sp" />
-                    </LinearLayout>
-
-                    <!-- 기록이 없을 때 -->
-                    <LinearLayout
-                        android:id="@+id/group_empty"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
+                        android:layout_marginTop="14dp"
                         android:background="@drawable/bg_records_card"
-                        android:gravity="center_horizontal"
                         android:orientation="vertical"
-                        android:paddingHorizontal="18dp"
-                        android:paddingVertical="28dp"
-                        android:visibility="gone">
+                        android:paddingHorizontal="14dp"
+                        android:paddingTop="16dp"
+                        android:paddingBottom="14dp">
 
-                        <ImageView
-                            android:layout_width="26dp"
-                            android:layout_height="26dp"
-                            android:importantForAccessibility="no"
-                            android:src="@drawable/ic_nav_records"
-                            app:tint="@color/oreum_ink3" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:text="@string/records_empty_title"
-                            android:textColor="@color/oreum_dark_text"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:gravity="center"
-                            android:text="@string/records_empty_body"
-                            android:textColor="@color/oreum_ink3"
-                            android:textSize="13sp" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/group_content"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
-
-                        <!-- 요약 3칸 -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="28dp"
                             android:orientation="horizontal">
 
-                            <LinearLayout style="@style/Widget.OREUM.RecordsKpi">
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="center_horizontal"
+                                android:orientation="vertical">
 
                                 <TextView
-                                    android:id="@+id/kpi_rate_label"
-                                    style="@style/Widget.OREUM.RecordsKpiLabel"
-                                    tools:text="최근 달성률" />
-
-                                <TextView
-                                    android:id="@+id/kpi_rate"
+                                    android:id="@+id/kpi_days"
                                     style="@style/Widget.OREUM.RecordsKpiValue"
-                                    tools:text="50%" />
+                                    android:gravity="center"
+                                    android:textSize="17sp"
+                                    tools:text="9일" />
+
+                                <TextView
+                                    style="@style/Widget.OREUM.RecordsKpiLabel"
+                                    android:layout_marginTop="2dp"
+                                    android:gravity="center"
+                                    android:textColor="@color/oreum_ink3"
+                                    android:textSize="11.5sp"
+                                    android:text="@string/records_kpi_days" />
                             </LinearLayout>
 
-                            <LinearLayout
-                                style="@style/Widget.OREUM.RecordsKpi"
-                                android:layout_marginStart="6dp">
+                            <View
+                                android:layout_width="1dp"
+                                android:layout_height="match_parent"
+                                android:background="#1A285041" />
 
-                                <TextView
-                                    style="@style/Widget.OREUM.RecordsKpiLabel"
-                                    android:text="@string/records_kpi_avg" />
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="center_horizontal"
+                                android:orientation="vertical">
 
                                 <TextView
                                     android:id="@+id/kpi_avg"
                                     style="@style/Widget.OREUM.RecordsKpiValue"
-                                    tools:text="2시간 36분" />
-                            </LinearLayout>
-
-                            <LinearLayout
-                                style="@style/Widget.OREUM.RecordsKpi"
-                                android:layout_marginStart="6dp">
-
-                                <TextView
-                                    android:id="@+id/kpi_sum_label"
-                                    style="@style/Widget.OREUM.RecordsKpiLabel"
-                                    tools:text="7일 실제/계획" />
-
-                                <TextView
-                                    android:id="@+id/kpi_sum"
-                                    style="@style/Widget.OREUM.RecordsKpiValue"
-                                    tools:text="16 / 21시간" />
-                            </LinearLayout>
-                        </LinearLayout>
-
-                        <!-- 계획 대비 실제 그래프 -->
-                        <LinearLayout
-                            style="@style/Widget.OREUM.RecordsCard"
-                            android:layout_marginTop="26dp">
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal">
-
-                                <TextView
-                                    android:id="@+id/text_chart_title"
-                                    style="@style/Widget.OREUM.RecordsCardTitle"
-                                    android:layout_width="0dp"
-                                    android:layout_weight="1"
-                                    tools:text="최근 6일 · 계획 대비 실제" />
-
-                                <View
-                                    android:layout_width="10dp"
-                                    android:layout_height="10dp"
-                                    android:background="@drawable/bg_legend_plan" />
-
-                                <TextView
-                                    style="@style/Widget.OREUM.RecordsLegend"
-                                    android:text="@string/records_legend_plan" />
-
-                                <View
-                                    android:layout_width="10dp"
-                                    android:layout_height="10dp"
-                                    android:layout_marginStart="6dp"
-                                    android:background="@drawable/bg_legend_actual" />
-
-                                <TextView
-                                    style="@style/Widget.OREUM.RecordsLegend"
-                                    android:text="@string/records_legend_actual" />
-                            </LinearLayout>
-
-                            <!-- 일일: 세로 막대 -->
-                            <LinearLayout
-                                android:id="@+id/bars_day"
-                                android:layout_width="match_parent"
-                                android:layout_height="150dp"
-                                android:layout_marginTop="18dp"
-                                android:orientation="horizontal" />
-
-                            <!-- 주간: 가로 막대 -->
-                            <LinearLayout
-                                android:id="@+id/bars_week"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="14dp"
-                                android:orientation="vertical" />
-
-                            <TextView
-                                android:id="@+id/text_chart_note"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="10dp"
-                                android:text="@string/records_chart_rec_note"
-                                android:textColor="@color/oreum_ink2"
-                                android:textSize="13sp" />
-                        </LinearLayout>
-
-                        <!-- AI 학습 분석 · 시뮬레이션 -->
-                        <LinearLayout
-                            style="@style/Widget.OREUM.RecordsCard"
-                            android:layout_marginTop="26dp">
-
-                            <TextView
-                                style="@style/Widget.OREUM.AiTag"
-                                android:text="@string/records_ai_tag" />
-
-                            <TextView
-                                android:id="@+id/text_pace_title"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="6dp"
-                                android:textColor="@color/oreum_dark_text"
-                                android:textSize="15sp"
-                                android:textStyle="bold"
-                                tools:text="학습 페이스" />
-
-                            <TextView
-                                android:id="@+id/text_pace_body"
-                                style="@style/Widget.OREUM.RecordsBody"
-                                android:layout_marginTop="6dp"
-                                tools:text="최근 3일 동안 하루 평균 4시간을 계획했고, 실제로는 평균 2시간 30분 공부했어요 (달성률 63%)." />
-
-                            <LinearLayout
-                                android:id="@+id/box_suggest"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="6dp"
-                                android:background="@drawable/bg_rec_suggest"
-                                android:orientation="horizontal"
-                                android:padding="10dp">
-
-                                <ImageView
-                                    android:id="@+id/icon_suggest"
-                                    android:layout_width="15dp"
-                                    android:layout_height="15dp"
-                                    android:layout_marginTop="3dp"
-                                    android:layout_marginEnd="6dp"
-                                    android:importantForAccessibility="no"
-                                    android:src="@drawable/ic_spark"
-                                    app:tint="#2F5F55" />
-
-                                <TextView
-                                    android:id="@+id/text_suggest"
-                                    style="@style/Widget.OREUM.RecordsBody"
-                                    android:layout_width="0dp"
-                                    android:layout_weight="1"
-                                    android:textColor="#2F5F55"
-                                    tools:text="다음 계획에서는 하루 학습량을 70%로 줄이고, 한 번에 45분씩 나눠 공부하는 방안을 제안해요." />
-                            </LinearLayout>
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btn_apply_pace"
-                                style="@style/Widget.OREUM.Button.SheetOutline"
-                                android:layout_width="match_parent"
-                                android:layout_height="40dp"
-                                android:layout_marginTop="6dp"
-                                android:text="@string/records_pace_apply"
-                                app:backgroundTint="@android:color/transparent"
-                                app:strokeColor="#E1E8E5" />
-
-                            <LinearLayout
-                                android:id="@+id/row_pace_applied"
-                                android:layout_width="match_parent"
-                                android:layout_height="36dp"
-                                android:layout_marginTop="6dp"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal">
-
-                                <ImageView
-                                    android:layout_width="15dp"
-                                    android:layout_height="15dp"
-                                    android:importantForAccessibility="no"
-                                    android:src="@drawable/ic_check"
-                                    app:tint="@color/oreum_today_green" />
-
-                                <TextView
-                                    android:id="@+id/text_pace_applied"
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="6dp"
-                                    android:layout_weight="1"
-                                    android:textColor="@color/oreum_today_green"
-                                    android:textSize="12.5sp"
-                                    android:textStyle="bold"
-                                    tools:text="다음 AI 계획 생성에 반영 중 (70% · 45분)" />
-
-                                <TextView
-                                    android:id="@+id/btn_clear_pace"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="match_parent"
-                                    android:background="?attr/selectableItemBackground"
                                     android:gravity="center"
-                                    android:paddingHorizontal="4dp"
-                                    android:text="@string/records_pace_clear"
-                                    android:textColor="@color/oreum_ink2"
-                                    android:textSize="13sp" />
+                                    android:textSize="17sp"
+                                    tools:text="1시간 22분" />
+
+                                <TextView
+                                    style="@style/Widget.OREUM.RecordsKpiLabel"
+                                    android:layout_marginTop="2dp"
+                                    android:gravity="center"
+                                    android:textColor="@color/oreum_ink3"
+                                    android:textSize="11.5sp"
+                                    android:text="@string/records_kpi_avg_day" />
                             </LinearLayout>
 
-                            <TextView
-                                android:id="@+id/text_pace_caption"
-                                style="@style/Widget.OREUM.RecordsBody"
-                                android:layout_marginTop="6dp"
-                                android:textColor="@color/oreum_ink2"
-                                tools:text="기록 6일을 기준으로 한 참고 분석이에요." />
-                        </LinearLayout>
-
-                        <!-- 반복되는 미완료 원인 -->
-                        <LinearLayout
-                            style="@style/Widget.OREUM.RecordsCard"
-                            android:layout_marginTop="26dp">
-
-                            <TextView
-                                style="@style/Widget.OREUM.RecordsCardTitle"
-                                android:text="@string/records_reasons_title" />
+                            <View
+                                android:layout_width="1dp"
+                                android:layout_height="match_parent"
+                                android:background="#1A285041" />
 
                             <LinearLayout
-                                android:id="@+id/list_reasons"
-                                android:layout_width="match_parent"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="14dp"
-                                android:orientation="vertical" />
+                                android:layout_weight="1"
+                                android:gravity="center_horizontal"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/kpi_rate"
+                                    style="@style/Widget.OREUM.RecordsKpiValue"
+                                    android:gravity="center"
+                                    android:textSize="17sp"
+                                    tools:text="64%" />
+
+                                <TextView
+                                    style="@style/Widget.OREUM.RecordsKpiLabel"
+                                    android:layout_marginTop="2dp"
+                                    android:gravity="center"
+                                    android:textColor="@color/oreum_ink3"
+                                    android:textSize="11.5sp"
+                                    android:text="@string/records_kpi_completion" />
+                            </LinearLayout>
                         </LinearLayout>
 
-                        <!-- 복구 계획 적용 전후 -->
+                        <!-- 최근 7일 막대 (코드에서 채움) -->
                         <LinearLayout
-                            android:id="@+id/card_recovery"
-                            style="@style/Widget.OREUM.RecordsCard"
-                            android:layout_marginTop="26dp">
+                            android:id="@+id/bars"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:orientation="horizontal" />
 
-                            <TextView
-                                style="@style/Widget.OREUM.RecordsCardTitle"
-                                android:text="@string/records_recovery_title" />
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginTop="12dp"
+                            android:background="#1A285041" />
 
-                            <LinearLayout
-                                android:id="@+id/list_recovery"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="10dp"
-                                android:orientation="vertical" />
-                        </LinearLayout>
-
-                        <!-- 일일 기록 -->
-                        <LinearLayout
-                            android:id="@+id/card_days"
-                            style="@style/Widget.OREUM.RecordsCard"
-                            android:layout_marginTop="26dp"
-                            android:paddingHorizontal="14dp"
-                            android:paddingVertical="4dp">
-
-                            <TextView
-                                style="@style/Widget.OREUM.RecordsCardTitle"
-                                android:layout_marginTop="5dp"
-                                android:text="@string/records_days_title" />
-
-                            <LinearLayout
-                                android:id="@+id/list_days"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:orientation="vertical" />
-                        </LinearLayout>
+                        <TextView
+                            android:id="@+id/text_pace"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:gravity="center"
+                            android:textColor="@color/oreum_ink2"
+                            android:textSize="13.5sp"
+                            tools:text="최근 3구간은 예상보다 12% 빨리 끝냈어요" />
                     </LinearLayout>
+
+                    <!-- 목록 (날짜별 · 구간별, 코드에서 채움) -->
+                    <LinearLayout
+                        android:id="@+id/list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:background="@drawable/bg_records_card"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="14dp"
+                        android:paddingVertical="4dp" />
                 </LinearLayout>
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>

@@ -2,14 +2,11 @@ package com.example.oreum.ui.records
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.oreum.data.model.DailyLog
 import com.example.oreum.data.model.Goal
-import com.example.oreum.data.model.User
-import com.example.oreum.data.repository.AuthRepository
-import com.example.oreum.data.repository.AuthRepositoryProvider
+import com.example.oreum.data.model.StudyRound
 import com.example.oreum.data.repository.StudyRepository
 import com.example.oreum.data.repository.StudyRepositoryProvider
-import com.example.oreum.domain.usecase.RecordsAnalysis
+import com.example.oreum.domain.usecase.RoundRecords
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,75 +15,48 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import java.time.LocalDate
 
-enum class RecordsView { DAY, WEEK }
+enum class RecordsView { DAY, ROUND }
 
 data class RecordsSelection(val view: RecordsView = RecordsView.DAY, val goalId: String? = null)
 
 data class RecordsUiState(
+    val loaded: Boolean = false,
     val selection: RecordsSelection = RecordsSelection(),
     val goals: List<Goal> = emptyList(),
-    /** 기록한 날 (오래된 순) */
-    val days: List<RecordsAnalysis.DayRecord> = emptyList(),
-    val logs: List<DailyLog> = emptyList(),
-    val pace: RecordsAnalysis.Pace = RecordsAnalysis.Pace(enough = false, days = 0),
-    val weeks: List<RecordsAnalysis.WeekBar> = emptyList(),
-    val reasons: List<RecordsAnalysis.ReasonCount> = emptyList(),
-    val recoveries: List<RecordsAnalysis.RecoveryResult> = emptyList(),
-    /** 다음 AI 계획에 반영 중인 페이스 (null이면 반영 안 함) */
-    val appliedLoad: Float? = null,
-    val appliedSession: Int? = null,
+    /** 공부한 날 (오래된 순) */
+    val days: List<RoundRecords.Day> = emptyList(),
+    /** 최근 7일 (오래된 순): 날짜 · 분 */
+    val week: List<Pair<Long, Int>> = emptyList(),
+    val pace: RoundRecords.Pace? = null,
+    /** 구간별 목록 (최근 순) */
+    val rounds: List<StudyRound> = emptyList(),
+    val today: Long = 0L,
 )
 
-/** STEP 6 기록: 일일 · 주간, 계획 대비 실제, 반복되는 미완료 원인, 학습 페이스 분석(시뮬레이션) · 다음 계획에 반영 */
+/** 기록 (1차): 날짜별 · 구간별 목록 + 페이스 카드. 모두 실제 학습 기록(구간 · 학습 시간) 기준이에요. */
 class RecordsViewModel(
     private val repository: StudyRepository = StudyRepositoryProvider.instance,
-    private val auth: AuthRepository = AuthRepositoryProvider.instance,
 ) : ViewModel() {
 
     private val selection = MutableStateFlow(RecordsSelection())
 
     val uiState: StateFlow<RecordsUiState> =
-        combine(
-            combine(repository.tasks, repository.logs, repository.goals) { t, l, g -> Triple(t, l, g) },
-            repository.recoveries,
-            auth.currentUser,
-            selection,
-        ) { (tasks, logs, goals), recoveries, user, sel0 ->
+        combine(repository.goals, repository.rounds, repository.sessions, selection) { goals, rounds, sessions, sel0 ->
             val sel = if (sel0.goalId != null && goals.none { it.id == sel0.goalId }) sel0.copy(goalId = null) else sel0
-            val today = LocalDate.now()
-            val days = RecordsAnalysis.loggedDays(tasks, logs, today.toEpochDay(), sel.goalId)
+            val today = LocalDate.now().toEpochDay()
             RecordsUiState(
+                loaded = true,
                 selection = sel,
                 goals = goals,
-                days = days,
-                logs = logs,
-                pace = RecordsAnalysis.pace(days),
-                weeks = RecordsAnalysis.weekBars(days, today),
-                reasons = RecordsAnalysis.reasonCounts(days),
-                recoveries = RecordsAnalysis.recoveryResults(
-                    recoveries.filter { sel.goalId == null || it.goalId == sel.goalId },
-                    days,
-                ),
-                appliedLoad = user?.paceRatio,
-                appliedSession = user?.paceSessionMinutes,
+                days = RoundRecords.studyDays(rounds, sessions, sel.goalId, today),
+                week = RoundRecords.last7(sessions, sel.goalId, today),
+                pace = RoundRecords.pace(rounds, sel.goalId),
+                rounds = RoundRecords.roundList(rounds, sel.goalId),
+                today = today,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), RecordsUiState())
 
     fun setView(view: RecordsView) = selection.update { it.copy(view = view) }
 
     fun setGoal(goalId: String?) = selection.update { it.copy(goalId = goalId) }
-
-    /** 다음 AI 계획 생성에 지금 페이스(하루 학습량 · 한 번에 공부할 시간)를 반영 */
-    fun applyPace(): Boolean {
-        val pace = uiState.value.pace
-        val user = auth.currentUser.value ?: return false
-        if (!pace.enough) return false
-        auth.updateUser(user.copy(paceRatio = pace.load, paceSessionMinutes = pace.session))
-        return true
-    }
-
-    fun clearPace() {
-        val user: User = auth.currentUser.value ?: return
-        auth.updateUser(user.copy(paceRatio = null, paceSessionMinutes = null))
-    }
 }

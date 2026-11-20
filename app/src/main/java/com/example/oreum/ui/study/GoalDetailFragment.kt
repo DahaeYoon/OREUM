@@ -23,6 +23,7 @@ import com.example.oreum.databinding.ItemRoundItemBinding
 import com.example.oreum.domain.usecase.RoadmapProgress
 import com.example.oreum.ui.aiplan.PlanDrafts
 import com.example.oreum.ui.round.NextRoundFragment
+import com.example.oreum.ui.round.RoundDetailSheet
 import com.example.oreum.ui.round.RoundLogSheet
 import com.example.oreum.util.DateText
 import com.example.oreum.util.Season
@@ -278,6 +279,11 @@ class GoalDetailFragment : Fragment(R.layout.fragment_goal_detail) {
             val all = r.allDone
             hb.textDone.setBackgroundResource(if (all) R.drawable.bg_badge else R.drawable.bg_dday_hot)
             hb.textDone.setTextColor(if (all) 0xFF2E7A5F.toInt() else requireContext().getColor(R.color.oreum_coral_ink))
+            hb.root.setOnClickListener {
+                if (childFragmentManager.findFragmentByTag(RoundDetailSheet.TAG) == null) {
+                    RoundDetailSheet.newInstance(r.id).show(childFragmentManager, RoundDetailSheet.TAG)
+                }
+            }
             binding.historyList.addView(hb.root)
         }
     }
