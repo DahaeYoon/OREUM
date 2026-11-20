@@ -20,13 +20,29 @@ import java.time.LocalDate
 import java.util.UUID
 
 /**
- * Firestore 연결 전 임시 저장소 (앱 메모리에만 있음).
- * 앱을 처음 열면 샘플 목표 · 구간 · 기록이 들어 있고, 앱을 완전히 종료하면 바뀐 내용은 사라져요.
+ * Firestore 연결 전 임시 저장소 (앱 메모리에만 있음 · 앱을 완전히 종료하면 사라져요).
+ * - 계정(ownerId)마다 데이터를 따로 들고 있어요. 새 계정은 빈 상태에서 시작해요.
+ * - 샘플 데이터는 마이 → 샘플 데이터 불러오기로 지금 계정에만 채워요.
  */
 class LocalStudyRepository(
-    private val ownerId: String = SampleData.OWNER_ID,
+    ownerId: String = SampleData.OWNER_ID,
     private val today: () -> LocalDate = { LocalDate.now() },
+    /** true면 처음부터 샘플 데이터를 채워요 (화면 확인 · 테스트용) */
+    withSample: Boolean = true,
 ) : StudyRepository {
+
+    /** 지금 로그인한 계정 (로그아웃 상태면 빈 문자열) */
+    private var ownerId: String = ownerId
+
+    /** 다른 계정의 데이터 (계정을 바꿔도 앱을 끄기 전까지는 남아 있어요) */
+    private data class Snapshot(
+        val goals: List<Goal> = emptyList(),
+        val rounds: List<StudyRound> = emptyList(),
+        val sessions: List<StudySession> = emptyList(),
+        val drafts: Map<String, RoadmapDraft> = emptyMap(),
+        val proposals: Map<String, NextProposal> = emptyMap(),
+    )
+    private val stash = mutableMapOf<String, Snapshot>()
 
     private val _goals = MutableStateFlow<List<Goal>>(emptyList())
 
@@ -43,7 +59,28 @@ class LocalStudyRepository(
     override val proposals: StateFlow<Map<String, NextProposal>> = _proposals.asStateFlow()
 
     init {
-        resetSampleData()
+        if (withSample) resetSampleData()
+    }
+
+    override fun switchOwner(ownerId: String?) {
+        val next = ownerId.orEmpty()
+        if (next == this.ownerId) return
+        stash[this.ownerId] = Snapshot(_goals.value, _rounds.value, _sessions.value, _roadmapDrafts.value, _proposals.value)
+        this.ownerId = next
+        val s = stash.remove(next) ?: Snapshot()
+        _goals.value = s.goals
+        _rounds.value = s.rounds
+        _sessions.value = s.sessions
+        _roadmapDrafts.value = s.drafts
+        _proposals.value = s.proposals
+    }
+
+    override fun clearAll() {
+        _goals.value = emptyList()
+        _rounds.value = emptyList()
+        _sessions.value = emptyList()
+        _roadmapDrafts.value = emptyMap()
+        _proposals.value = emptyMap()
     }
 
     override fun goal(id: String): Goal? = _goals.value.firstOrNull { it.id == id }

@@ -7,7 +7,7 @@
     <string name="nav_records">기록</string>
     <string name="nav_mypage">마이</string>
 
-    <!-- 로그인 (STEP 0 임시) -->
+    <!-- 로그인 · 회원가입 (Firebase Authentication) -->
     <string name="login_title">로그인</string>
     <string name="login_to_signup">회원가입</string>
     <string name="signup_title">회원가입</string>
@@ -21,13 +21,9 @@
     <string name="login_button">로그인</string>
     <string name="login_loading">로그인하는 중…</string>
     <string name="login_find_password">비밀번호 찾기</string>
-    <string name="login_test_title">테스트 계정으로 둘러보기</string>
-    <string name="login_test_account">test@oreum.app · oreum1234</string>
-    <string name="login_test_fill">자동 입력</string>
     <string name="find_password_title">비밀번호 찾기</string>
     <string name="find_password_body">가입한 이메일로 비밀번호 재설정 링크를 보내는 기능은 Firebase Authentication을 연결한 뒤에 만들어요. 지금은 미구현 상태예요.</string>
     <string name="dialog_close">닫기</string>
-    <string name="auth_local_notice">지금은 앱 안 임시 계정으로만 로그인돼요 (Firebase 연결 전)</string>
 
     <!-- STEP 1 · 회원가입 -->
     <string name="signup_button">가입하기</string>
@@ -47,6 +43,9 @@
     <string name="error_terms_required">약관에 동의해야 가입할 수 있어요</string>
     <string name="error_wrong_credentials">이메일 또는 비밀번호가 맞지 않아요. 다시 확인해 주세요.</string>
     <string name="error_email_taken">이미 가입된 이메일이에요</string>
+    <string name="error_network">인터넷 연결을 확인하고 다시 시도해 주세요</string>
+    <string name="error_too_many_requests">시도가 너무 많았어요. 잠시 후 다시 시도해 주세요</string>
+    <string name="error_unknown">잠시 문제가 생겼어요. 다시 시도해 주세요</string>
     <string name="toast_logged_in">로그인했어요</string>
     <string name="toast_signed_up">%1$s님, 오름에 오신 걸 환영해요!</string>
 
@@ -337,11 +336,16 @@
     <string name="round_status_done">완료</string>
     <!-- 1차 R7: 마이 · 정상 도착 -->
     <string name="mypage_account">계정</string>
-    <string name="mypage_reset">샘플 데이터 초기화</string>
-    <string name="mypage_reset_title">샘플 데이터를 초기화할까요?</string>
-    <string name="mypage_reset_body">추가하거나 바꾼 목표 · 구간 · 학습 기록이 모두 처음 상태로 돌아가요.</string>
-    <string name="mypage_reset_ok">초기화</string>
-    <string name="toast_mypage_reset">샘플 데이터를 처음 상태로 되돌렸어요</string>
+    <string name="mypage_reset">샘플 데이터 불러오기</string>
+    <string name="mypage_reset_title">샘플 데이터를 불러올까요?</string>
+    <string name="mypage_reset_body">지금 계정의 목표 · 구간 · 학습 기록이 샘플로 바뀌어요. 지금 데이터는 사라져요.</string>
+    <string name="mypage_reset_ok">불러오기</string>
+    <string name="toast_mypage_reset">샘플 데이터를 불러왔어요</string>
+    <string name="mypage_clear">데이터 모두 지우기</string>
+    <string name="mypage_clear_title">데이터를 모두 지울까요?</string>
+    <string name="mypage_clear_body">지금 계정의 목표 · 구간 · 학습 기록이 모두 사라지고, 처음 가입한 상태로 돌아가요.</string>
+    <string name="mypage_clear_ok">지우기</string>
+    <string name="toast_mypage_clear">데이터를 모두 지웠어요</string>
     <string name="mypage_logout">로그아웃</string>
     <string name="mypage_logout_title">로그아웃할까요?</string>
     <string name="mypage_logout_body">다시 로그인하면 이어서 사용할 수 있어요.</string>

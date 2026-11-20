@@ -1,5 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
+    // Firebase: app/google-services.json을 읽어 앱과 Firebase 프로젝트를 연결해요
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -48,6 +50,10 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
+
+    // 1번: Firebase Authentication (BoM이 Firebase 라이브러리 버전을 맞춰 줘요)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
