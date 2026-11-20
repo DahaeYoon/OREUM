@@ -40,9 +40,6 @@
         android:label="@string/nav_home"
         tools:layout="@layout/fragment_home">
         <action
-            android:id="@+id/action_home_to_recovery"
-            app:destination="@id/recoveryFragment" />
-        <action
             android:id="@+id/action_home_to_planReview"
             app:destination="@id/planReviewFragment" />
         <action
@@ -116,46 +113,18 @@
             app:argType="string" />
     </fragment>
 
-    <!-- 예전 계획(캘린더) 화면: 하단 탭에서 뺐어요. 7단계에서 코드와 함께 지워요 -->
-    <fragment
-        android:id="@+id/calendarFragment"
-        android:name="com.example.oreum.ui.calendar.CalendarFragment"
-        android:label="@string/nav_calendar"
-        tools:layout="@layout/fragment_plan">
-        <action
-            android:id="@+id/action_calendar_to_planReview"
-            app:destination="@id/planReviewFragment" />
-        <action
-            android:id="@+id/action_calendar_to_recovery"
-            app:destination="@id/recoveryFragment" />
-    </fragment>
-
-    <!-- AI 학습 계획 복구 (시뮬레이션 · 승인해야 적용) -->
-    <fragment
-        android:id="@+id/recoveryFragment"
-        android:name="com.example.oreum.ui.recovery.RecoveryFragment"
-        android:label="@string/rec_title"
-        tools:layout="@layout/fragment_recovery">
-        <action
-            android:id="@+id/action_recovery_to_goalForm"
-            app:destination="@id/goalFormFragment" />
-    </fragment>
-
     <fragment
         android:id="@+id/recordsFragment"
         android:name="com.example.oreum.ui.records.RecordsFragment"
         android:label="@string/nav_records"
-        tools:layout="@layout/fragment_records">
-        <action
-            android:id="@+id/action_records_to_recovery"
-            app:destination="@id/recoveryFragment" />
-    </fragment>
+        tools:layout="@layout/fragment_records" />
 
     <fragment
         android:id="@+id/myPageFragment"
         android:name="com.example.oreum.ui.mypage.MyPageFragment"
         android:label="@string/nav_mypage"
-        tools:layout="@layout/fragment_placeholder" />
+        tools:layout="@layout/fragment_mypage" />
+
     <!-- AI 다음 구간 추천 (어느 화면에서든 열 수 있어요) -->
     <action
         android:id="@+id/action_global_nextRound"

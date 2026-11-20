@@ -230,7 +230,8 @@ class NextRoundFragment : Fragment(R.layout.fragment_next_round) {
         if (p.final || round == null) {
             // 정상 도착: 확인 없이 바로 (프로토타입과 같음)
             if (repository.approveProposal(g.id, today()) == ApproveResult.ReachedTop) {
-                goHome(g.id, getString(R.string.toast_next_top, g.title))
+                HomePrefs.summitGoalId = g.id
+                goHome(g.id, null)
             }
             return
         }
@@ -246,10 +247,10 @@ class NextRoundFragment : Fragment(R.layout.fragment_next_round) {
     }
 
     /** 승인한 목표의 산이 보이는 홈으로 */
-    private fun goHome(goalId: String, message: String) {
+    private fun goHome(goalId: String, message: String?) {
         HomePrefs.goalId = goalId
         HomePrefs.picked = true
-        toast(message)
+        if (message != null) toast(message)
         val activity = requireActivity()
         findNavController().navigateUp()
         activity.findViewById<BottomNavigationView>(R.id.bottom_nav)?.selectedItemId = R.id.homeFragment

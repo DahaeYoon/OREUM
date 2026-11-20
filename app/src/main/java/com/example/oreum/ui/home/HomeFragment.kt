@@ -95,6 +95,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun render(state: HomeUiState) {
         if (!state.loaded) return
         lastState = state
+        showSummitIfPending()
         val today = LocalDate.now()
 
         binding.textDate.text = today.format(DATE_FORMAT)
@@ -257,6 +258,23 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun openCheckpoint(index: Int) {
         val slot = lastState?.slots?.getOrNull(index) ?: return
         SlotInfoSheet.newInstance(slot.id).show(childFragmentManager, SlotInfoSheet.TAG)
+    }
+
+    /** 추천 화면에서 정상 도착을 승인하고 돌아왔으면: 산을 보여 준 뒤 정상 도착 팝업 */
+    private fun showSummitIfPending() {
+        val goalId = HomePrefs.summitGoalId ?: return
+        HomePrefs.summitGoalId = null
+        binding.root.postDelayed({
+            if (_binding == null || !isAdded || childFragmentManager.findFragmentByTag(SummitDialog.TAG) != null) return@postDelayed
+            SummitDialog.newInstance(goalId).show(childFragmentManager, SummitDialog.TAG)
+        }, 700)
+    }
+
+    /** 새로운 산 등반하기: 목표 만들기 */
+    fun openNewGoal() {
+        val nav = findNavController()
+        if (nav.currentDestination?.id != R.id.homeFragment) return
+        nav.navigate(R.id.action_home_to_goalForm)
     }
 
     /** 학습 결과 기록 (submit = true: 못 끝낸 이유까지 바로 보여요) */

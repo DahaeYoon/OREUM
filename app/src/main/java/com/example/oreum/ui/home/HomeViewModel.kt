@@ -23,6 +23,8 @@ import java.time.LocalDate
 object HomePrefs {
     var goalId: String? = null
     var picked: Boolean = false
+    /** 방금 정상에 도착한 목표: 홈에 돌아오면 정상 도착 팝업을 한 번 보여 줘요 */
+    var summitGoalId: String? = null
 }
 
 /** 산 아래 패널의 카드 종류 (프로토타입 홈 next-card) */

@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- 전체 비교: 수정 계획 칸 (연한 민트 85%) -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <solid android:color="#D9E3F1EC" />
-    <corners android:radius="10dp" />
-</shape>
