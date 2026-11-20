@@ -21,14 +21,18 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.oreum.R
+import com.example.oreum.data.model.RoundStatus
 import com.example.oreum.data.model.TrailOrder
 import com.example.oreum.databinding.FragmentHomeBinding
 import com.example.oreum.ui.aiplan.PlanDrafts
 import com.example.oreum.ui.common.GlassBackdrop
 import com.example.oreum.ui.common.GlassBackgroundDrawable
+import com.example.oreum.ui.round.NextRoundFragment
+import com.example.oreum.ui.round.RoundLogSheet
 import com.example.oreum.ui.study.GoalDetailViewModel
 import com.example.oreum.util.DateText
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -125,6 +129,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val r = state.round
         binding.rowRoundActs.isVisible = r != null
         if (r != null) binding.btnRoundAll.text = getString(R.string.home_round_all, r.items.size)
+        // 학습 결과 기록: 진행 중이고 아직 남은 항목이 있을 때
+        binding.btnRoundLog.isVisible = r != null && r.status == RoundStatus.ACTIVE && !r.allDone
+        if (r != null) binding.btnRoundLog.setOnClickListener { openLog(r.id, submit = false) }
 
         // 로드맵 진행률: 단계 k/n · %
         val pct = state.progress.percent
@@ -161,28 +168,24 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 binding.textNextCap.text = getString(R.string.home_round_ready_cap, n.goalTitle, n.round.items.size, DateText.minutes(n.round.estimatedMinutes))
                 btn.text = getString(R.string.home_btn_start)
                 btn.setIconResource(R.drawable.ic_route)
-                btn.setOnClickListener {
-                    viewModel.startRound(n.round.id)
-                    toast(getString(R.string.toast_round_started, n.round.no))
-                }
+                btn.setOnClickListener { startRound(n.round.id) }
             }
             is NextCard.AllDone -> {
                 binding.textNextLabel.text = getString(R.string.home_round_label, n.round.no, n.round.doneCount, n.round.items.size)
                 binding.textNextTitle.setText(R.string.home_round_all_done)
                 binding.textNextCap.setText(R.string.home_round_all_done_cap)
-                // 결과 기록 화면은 5단계에서 연결해요
-                btn.text = getString(R.string.home_btn_detail)
+                btn.text = getString(R.string.home_btn_submit)
                 btn.icon = null
-                btn.setOnClickListener { openDetail(n.round.goalId) }
+                btn.setOnClickListener { openLog(n.round.id, submit = true) }
             }
             is NextCard.Proposal -> {
-                binding.textNextLabel.setText(R.string.home_proposal_label)
-                binding.textNextTitle.text = n.round?.let { getString(R.string.home_proposal_title, it.no, it.displayTopic) }
-                    ?: getString(R.string.home_proposal_final)
+                val pr = n.round
+                binding.textNextLabel.text = if (pr != null) getString(R.string.home_proposal_label_n, pr.no - 1) else getString(R.string.home_proposal_label_final)
+                binding.textNextTitle.text = if (pr != null) getString(R.string.home_proposal_title, pr.no) else getString(R.string.home_proposal_final)
                 binding.textNextCap.setText(R.string.home_proposal_cap)
                 btn.text = getString(R.string.home_btn_check)
-                btn.icon = null
-                btn.setOnClickListener { openDetail(n.goalId) }
+                btn.setIconResource(R.drawable.ic_spark)
+                btn.setOnClickListener { openNext(n.goalId) }
             }
             is NextCard.NoPlan -> {
                 binding.textNextLabel.setText(R.string.home_new_mountain)
@@ -224,7 +227,19 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     fun tick(roundId: String, itemId: String) {
         val r = viewModel.toggleItem(roundId, itemId) ?: return
         when {
-            r.nowDone && r.roundAllDone -> toast(getString(R.string.toast_round_all_done, r.roundNo))
+            r.nowDone && r.roundAllDone -> {
+                // 항목을 모두 마쳤으면: 산 이동을 보여 준 뒤 결과 기록을 권해요
+                (childFragmentManager.findFragmentByTag(HomeRoundSheet.TAG) as? HomeRoundSheet)?.dismiss()
+                binding.root.postDelayed({
+                    if (_binding == null || !isAdded) return@postDelayed
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setTitle(getString(R.string.toast_round_all_done, r.roundNo))
+                        .setMessage(R.string.round_all_done_body)
+                        .setNegativeButton(R.string.round_submitted_later, null)
+                        .setPositiveButton(R.string.round_all_done_ok) { _, _ -> openLog(roundId, submit = true) }
+                        .show()
+                }, 900)
+            }
             r.nowDone -> toast(getString(R.string.toast_home_done_move, r.title.removeSuffix(" (이어서)"), (r.before * 100).toInt(), (r.after * 100).toInt()))
             else -> toast(getString(R.string.toast_home_tick_off, r.title.removeSuffix(" (이어서)")))
         }
@@ -242,6 +257,24 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun openCheckpoint(index: Int) {
         val slot = lastState?.slots?.getOrNull(index) ?: return
         SlotInfoSheet.newInstance(slot.id).show(childFragmentManager, SlotInfoSheet.TAG)
+    }
+
+    /** 학습 결과 기록 (submit = true: 못 끝낸 이유까지 바로 보여요) */
+    fun openLog(roundId: String, submit: Boolean) {
+        if (childFragmentManager.findFragmentByTag(RoundLogSheet.TAG) != null) return
+        RoundLogSheet.newInstance(roundId, submit).show(childFragmentManager, RoundLogSheet.TAG)
+    }
+
+    /** AI 다음 구간 추천 */
+    fun openNext(goalId: String) {
+        val nav = findNavController()
+        if (nav.currentDestination?.id != R.id.homeFragment) return
+        NextRoundFragment.open(nav, goalId)
+    }
+
+    fun startRound(roundId: String) {
+        val r = viewModel.startRound(roundId) ?: return
+        toast(getString(R.string.toast_round_started, r.no))
     }
 
     fun openDetail(goalId: String) {

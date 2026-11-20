@@ -342,8 +342,9 @@ class LocalStudyRepository(
         return r
     }
 
-    override fun saveRoundLog(roundId: String, entries: List<RoundLogEntry>, today: Long) {
-        applyLog(roundId, entries, today)
+    override fun saveRoundLog(roundId: String, entries: List<RoundLogEntry>, draft: RoundResult?, today: Long) {
+        val r = applyLog(roundId, entries, today) ?: return
+        if (draft != null) putRound(r.copy(result = draft))
     }
 
     override fun submitRound(roundId: String, entries: List<RoundLogEntry>, result: RoundResult, today: Long): NextProposal? {

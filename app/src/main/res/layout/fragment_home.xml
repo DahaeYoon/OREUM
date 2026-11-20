@@ -244,6 +244,32 @@
                         app:iconTint="@color/oreum_dark_text"
                         app:strokeColor="#F2FFFFFF"
                         tools:text="항목 4개 모두 보기" />
+
+                    <!-- 학습 결과 기록 (진행 중 · 남은 항목이 있을 때) -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_round_log"
+                        style="@style/Widget.Material3.Button"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:minHeight="40dp"
+                        android:paddingHorizontal="8dp"
+                        android:text="@string/home_round_log"
+                        android:textColor="@color/white"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        app:backgroundTint="#3E8E7A"
+                        app:cornerRadius="12dp"
+                        app:icon="@drawable/ic_clock"
+                        app:iconGravity="textStart"
+                        app:iconPadding="6dp"
+                        app:iconSize="15dp"
+                        app:iconTint="@color/white"
+                        tools:visibility="visible" />
                 </LinearLayout>
 
                 <!-- 로드맵 진행률 -->

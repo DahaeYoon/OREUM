@@ -119,8 +119,8 @@ interface StudyRepository {
     /** 항목 완료 체크 · 해제: 완료하면 남은 예상 시간을 오늘 공부한 시간으로 기록해요 */
     fun toggleItem(roundId: String, itemId: String, today: Long): StudyRound?
 
-    /** 오늘 기록 저장: 항목별 완료 · 오늘 공부한 시간 · 못 한 이유 (구간은 그대로 이어져요) */
-    fun saveRoundLog(roundId: String, entries: List<RoundLogEntry>, today: Long)
+    /** 오늘 기록 저장: 항목별 완료 · 오늘 공부한 시간 · 못 한 이유 (구간은 그대로 이어져요). draft = 고른 난이도 · 메모 (제출 전 임시) */
+    fun saveRoundLog(roundId: String, entries: List<RoundLogEntry>, draft: RoundResult?, today: Long)
 
     /** 구간 결과 제출: 기록을 저장하고 구간을 마친 뒤, AI 다음 구간 추천을 만들어 돌려줘요 */
     fun submitRound(roundId: String, entries: List<RoundLogEntry>, result: RoundResult, today: Long): NextProposal?
