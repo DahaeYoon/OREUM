@@ -295,6 +295,7 @@ class SlotInfoSheet : HomeListSheet() {
 class HomeRoundSheet : HomeListSheet() {
 
     private val roundId get() = requireArguments().getString(ARG_ROUND).orEmpty()
+    private var act: MaterialButton? = null
 
     override fun build() {
         binding.textCaption.isVisible = true
@@ -309,14 +310,17 @@ class HomeRoundSheet : HomeListSheet() {
                 if (r != null) home?.openDetail(r.goalId)
             }
         }
-        val close = MaterialButton(requireContext()).apply {
-            text = getString(R.string.home_close)
+        // 오른쪽 버튼: 시작 전이면 'n구간 시작', 진행 중이면 '학습 결과 기록' (다 끝냈으면 '결과 제출')
+        act = MaterialButton(requireContext()).apply {
             backgroundTintList = ColorStateList.valueOf(color(R.color.oreum_deep_button))
             setTextColor(0xFFFFFFFF.toInt())
-            setOnClickListener { dismiss() }
+            iconTint = ColorStateList.valueOf(0xFFFFFFFF.toInt())
+            iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
+            iconSize = dp(16)
+            iconPadding = dp(4)
         }
         binding.rowButtons.addView(detail, LinearLayout.LayoutParams(0, dp(46), 1f))
-        binding.rowButtons.addView(close, LinearLayout.LayoutParams(0, dp(46), 1f).apply { marginStart = dp(8) })
+        binding.rowButtons.addView(act, LinearLayout.LayoutParams(0, dp(46), 1.4f).apply { marginStart = dp(8) })
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -330,6 +334,22 @@ class HomeRoundSheet : HomeListSheet() {
 
     private fun render(r: StudyRound) {
         binding.textTitle.text = getString(R.string.home_round_sheet_title, r.no, r.displayTopic)
+        act?.apply {
+            isVisible = r.status != RoundStatus.DONE
+            if (r.status == RoundStatus.READY) {
+                text = getString(R.string.round_start, r.no)
+                setIconResource(R.drawable.ic_route)
+                setOnClickListener { home?.startRound(r.id) }
+            } else {
+                text = getString(if (r.allDone) R.string.home_btn_submit else R.string.home_round_log)
+                setIconResource(R.drawable.ic_clock)
+                setOnClickListener {
+                    val h = home
+                    dismiss()
+                    h?.openLog(r.id, submit = r.allDone)
+                }
+            }
+        }
         binding.textCaption.text = getString(R.string.round_sum, r.doneCount, r.items.size, DateText.minutes(r.estimatedMinutes))
         val list = binding.list
         list.removeAllViews()

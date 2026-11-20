@@ -22,6 +22,8 @@ import com.example.oreum.databinding.ItemRoundHistoryBinding
 import com.example.oreum.databinding.ItemRoundItemBinding
 import com.example.oreum.domain.usecase.RoadmapProgress
 import com.example.oreum.ui.aiplan.PlanDrafts
+import com.example.oreum.ui.round.NextRoundFragment
+import com.example.oreum.ui.round.RoundLogSheet
 import com.example.oreum.util.DateText
 import com.example.oreum.util.Season
 import com.example.oreum.util.applySystemBarsPadding
@@ -103,6 +105,7 @@ class GoalDetailFragment : Fragment(R.layout.fragment_goal_detail) {
                 binding.textStateBody.setText(R.string.goal_detail_draft_body)
                 binding.btnState.isVisible = true
                 binding.btnState.setText(R.string.study_do_review)
+                binding.btnState.icon = null
                 binding.btnState.setOnClickListener { openReview(generate = false) }
             }
             goal.planStatus == PlanStatus.NONE || goal.roadmap.isEmpty() -> {
@@ -111,6 +114,7 @@ class GoalDetailFragment : Fragment(R.layout.fragment_goal_detail) {
                 binding.textStateBody.setText(R.string.goal_detail_none_body)
                 binding.btnState.isVisible = true
                 binding.btnState.setText(R.string.goal_detail_make)
+                binding.btnState.setIconResource(R.drawable.ic_spark)
                 binding.btnState.setOnClickListener { openReview(generate = true) }
             }
             proposal != null -> {
@@ -119,8 +123,10 @@ class GoalDetailFragment : Fragment(R.layout.fragment_goal_detail) {
                 binding.textStateBody.text = proposal.round?.let { r ->
                     getString(R.string.goal_detail_proposal_body, r.no, r.displayTopic, r.items.size)
                 } ?: getString(R.string.goal_detail_proposal_final)
-                // 추천 화면은 5단계에서 연결해요
-                binding.btnState.isVisible = false
+                binding.btnState.isVisible = true
+                binding.btnState.setText(R.string.goal_detail_proposal_btn)
+                binding.btnState.setIconResource(R.drawable.ic_spark)
+                binding.btnState.setOnClickListener { NextRoundFragment.open(findNavController(), viewModel.goalId) }
             }
             else -> binding.cardState.isVisible = false
         }
@@ -165,8 +171,17 @@ class GoalDetailFragment : Fragment(R.layout.fragment_goal_detail) {
             }
             ib.btnCheck.contentDescription = getString(R.string.round_item_check, item.title)
             ib.btnCheck.setOnClickListener {
+                val wasDone = item.done
                 val updated = viewModel.toggleItem(r.id, item.id) ?: return@setOnClickListener
-                if (updated.allDone) toast(getString(R.string.toast_round_all_done, updated.no))
+                if (!wasDone && updated.allDone) {
+                    // 항목을 모두 마쳤으면 결과 기록을 권해요
+                    MaterialAlertDialogBuilder(requireContext())
+                        .setTitle(getString(R.string.toast_round_all_done, updated.no))
+                        .setMessage(R.string.round_all_done_body)
+                        .setNegativeButton(R.string.round_submitted_later, null)
+                        .setPositiveButton(R.string.round_all_done_ok) { _, _ -> openLog(updated.id, submit = true) }
+                        .show()
+                }
             }
             ib.rowMain.setOnClickListener {
                 RoundItemSheet.edit(r.id, item.id).show(childFragmentManager, RoundItemSheet.TAG)
@@ -176,17 +191,30 @@ class GoalDetailFragment : Fragment(R.layout.fragment_goal_detail) {
         binding.btnRoundAdd.setOnClickListener {
             RoundItemSheet.add(r.id).show(childFragmentManager, RoundItemSheet.TAG)
         }
-        // 시작 전 구간: 시작 버튼 (학습 결과 기록은 5단계에서 연결)
-        binding.btnRoundMain.isVisible = ready
-        binding.btnRoundMain.text = getString(R.string.round_start, r.no)
-        binding.btnRoundMain.setOnClickListener {
-            viewModel.startRound(r.id)
-            toast(getString(R.string.toast_round_started, r.no))
+        // 시작 전: [n구간 시작] / 진행 중: [항목 추가] [학습 결과 기록] (다 끝냈으면 [결과 제출])
+        binding.btnRoundAdd.isVisible = !ready
+        binding.btnRoundMain.isVisible = true
+        if (ready) {
+            binding.btnRoundMain.text = getString(R.string.round_start, r.no)
+            binding.btnRoundMain.setIconResource(R.drawable.ic_route)
+            binding.btnRoundMain.setOnClickListener {
+                viewModel.startRound(r.id)
+                toast(getString(R.string.toast_round_started, r.no))
+            }
+        } else {
+            binding.btnRoundMain.text = getString(if (r.allDone) R.string.home_btn_submit else R.string.home_round_log)
+            binding.btnRoundMain.setIconResource(R.drawable.ic_clock)
+            binding.btnRoundMain.setOnClickListener { openLog(r.id, submit = r.allDone) }
         }
 
         binding.iconFold.rotation = if (state.foldOpen) 180f else 0f
         binding.textFold.isVisible = state.foldOpen
         binding.textFold.text = foldText(r)
+    }
+
+    private fun openLog(roundId: String, submit: Boolean) {
+        if (childFragmentManager.findFragmentByTag(RoundLogSheet.TAG) != null) return
+        RoundLogSheet.newInstance(roundId, submit).show(childFragmentManager, RoundLogSheet.TAG)
     }
 
     private fun foldText(r: StudyRound) = buildString {

@@ -156,4 +156,18 @@
         android:name="com.example.oreum.ui.mypage.MyPageFragment"
         android:label="@string/nav_mypage"
         tools:layout="@layout/fragment_placeholder" />
+    <!-- AI 다음 구간 추천 (어느 화면에서든 열 수 있어요) -->
+    <action
+        android:id="@+id/action_global_nextRound"
+        app:destination="@id/nextRoundFragment" />
+
+    <fragment
+        android:id="@+id/nextRoundFragment"
+        android:name="com.example.oreum.ui.round.NextRoundFragment"
+        android:label="@string/home_proposal_label"
+        tools:layout="@layout/fragment_next_round">
+        <argument
+            android:name="goalId"
+            app:argType="string" />
+    </fragment>
 </navigation>

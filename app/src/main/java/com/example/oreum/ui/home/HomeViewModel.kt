@@ -150,7 +150,10 @@ class HomeViewModel(
         return TickResult(title, before, after, done, r.allDone, r.no)
     }
 
-    fun startRound(roundId: String) = repository.startRound(roundId, today())
+    fun startRound(roundId: String): StudyRound? {
+        repository.startRound(roundId, today())
+        return repository.round(roundId)
+    }
 
     data class TickResult(
         val title: String,
