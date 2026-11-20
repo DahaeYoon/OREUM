@@ -1,8 +1,5 @@
 package com.example.oreum.data.model
 
-/** 할 일 진행 상태 */
-enum class TaskStatus { TODO, IN_PROGRESS, DONE }
-
 /** 일정 종류: 캘린더 색 구분에 사용 */
 enum class ScheduleKind { CLASS, PERSONAL, EXAM }
 
@@ -56,6 +53,3 @@ enum class TrailOrder(val label: String) {
     /** 목표별로 묶기 · 보라 긴 점선 */
     BY_GOAL("목표별로 묶기"),
 }
-
-/** AI 계획 · 복구 제안 상태: APPLIED가 되기 전에는 원본 계획이 바뀌지 않아요. */
-enum class ProposalStatus { PROPOSED, APPLIED, DISCARDED }

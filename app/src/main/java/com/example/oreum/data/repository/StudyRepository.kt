@@ -1,18 +1,12 @@
 package com.example.oreum.data.repository
 
-import com.example.oreum.data.model.DailyLog
-import com.example.oreum.data.model.DayLogEntry
 import com.example.oreum.data.model.Goal
+import com.example.oreum.data.model.MissReason
 import com.example.oreum.data.model.NextProposal
 import com.example.oreum.data.model.RoadmapDraft
 import com.example.oreum.data.model.RoundResult
 import com.example.oreum.data.model.StudyRound
 import com.example.oreum.data.model.StudySession
-import com.example.oreum.data.model.MissReason
-import com.example.oreum.data.model.PlanDraft
-import com.example.oreum.data.model.RecoveryProposal
-import com.example.oreum.data.model.RetroTag
-import com.example.oreum.data.model.Task
 import kotlinx.coroutines.flow.StateFlow
 
 /**
@@ -22,14 +16,6 @@ import kotlinx.coroutines.flow.StateFlow
  */
 interface StudyRepository {
     val goals: StateFlow<List<Goal>>
-    val tasks: StateFlow<List<Task>>
-    val logs: StateFlow<List<DailyLog>>
-
-    /** 적용한 AI 복구 기록 (오래된 순) */
-    val recoveries: StateFlow<List<RecoveryProposal>>
-
-    /** 승인 전 AI 계획 초안 (목표 id → 초안) */
-    val drafts: StateFlow<Map<String, PlanDraft>>
 
     fun goal(id: String): Goal?
 
@@ -38,48 +24,11 @@ interface StudyRepository {
 
     fun updateGoal(goal: Goal)
 
-    /** 목표와 그 목표의 할 일을 함께 지워요. */
+    /** 목표와 그 목표의 구간 · 학습 기록 · 초안 · 추천을 함께 지워요. */
     fun deleteGoal(id: String)
 
     /** completed = true면 완료한 산(오른 산)으로, false면 다시 진행 중으로 */
     fun setGoalCompleted(id: String, completed: Boolean)
-
-    /** AI 계획 초안 저장 (목표는 '승인 대기' 상태가 돼요) */
-    fun saveDraft(draft: PlanDraft)
-
-    /** 검토 화면에서 고친 초안 항목 저장 */
-    fun updateDraft(draft: PlanDraft)
-
-    /**
-     * 초안 승인: 이 목표의 아직 시작하지 않은 남은 할 일(오늘 이후 · 미완료 · 실제 시간 0)을
-     * 초안 항목으로 바꾸고 목표를 '계획 진행 중'으로 바꿔요. 적용한 항목 수를 돌려줘요.
-     */
-    fun approveDraft(goalId: String, todayEpochDay: Long): Int
-
-    fun task(id: String): com.example.oreum.data.model.Task?
-
-    /** 할 일 완료 · 완료 취소 (완료하면 실제 시간이 없을 때 계획 시간으로 채워요) */
-    fun setTaskDone(id: String, done: Boolean)
-
-    fun addTask(task: com.example.oreum.data.model.Task): com.example.oreum.data.model.Task
-
-    fun updateTask(task: com.example.oreum.data.model.Task)
-
-    fun deleteTask(id: String)
-
-    /** 하루 학습 결과 기록 저장: 항목별 완료 · 실제 시간 · 미완료 이유 + 회고 키워드 · 한 줄 메모 */
-    fun saveDayLog(date: Long, entries: List<DayLogEntry>, tags: List<RetroTag>, memo: String)
-
-    /**
-     * AI 복구 승인: 미완료 항목은 '복구됨'으로 바꾸고(이미 한 시간만 완료로 인정), 새 항목을 추가하고,
-     * 밀려난 기존 항목의 날짜를 옮긴 뒤 복구 기록을 남겨요. 저장한 복구 기록을 돌려줘요.
-     */
-    fun applyRecovery(
-        proposal: RecoveryProposal,
-        carriedTaskIds: List<String>,
-        newTasks: List<com.example.oreum.data.model.Task>,
-        moves: Map<String, Long>,
-    ): RecoveryProposal
 
     /** 샘플 데이터로 처음 상태 되돌리기 (마이 → 샘플 데이터 초기화) */
     fun resetSampleData()

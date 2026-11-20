@@ -1,15 +1,7 @@
 package com.example.oreum.data.local
 
-import com.example.oreum.data.model.DailyLog
-import com.example.oreum.data.model.DayLogEntry
 import com.example.oreum.data.model.Goal
-import com.example.oreum.data.model.PlanDraft
 import com.example.oreum.data.model.PlanStatus
-import com.example.oreum.data.model.ProposalStatus
-import com.example.oreum.data.model.RecoveryProposal
-import com.example.oreum.data.model.RetroTag
-import com.example.oreum.data.model.Task
-import com.example.oreum.data.model.TaskStatus
 import com.example.oreum.data.model.NextProposal
 import com.example.oreum.data.model.RoadmapDraft
 import com.example.oreum.data.model.RoundResult
@@ -37,16 +29,8 @@ class LocalStudyRepository(
 ) : StudyRepository {
 
     private val _goals = MutableStateFlow<List<Goal>>(emptyList())
-    private val _tasks = MutableStateFlow<List<Task>>(emptyList())
-    private val _logs = MutableStateFlow<List<DailyLog>>(emptyList())
-    private val _drafts = MutableStateFlow<Map<String, PlanDraft>>(emptyMap())
-    private val _recoveries = MutableStateFlow<List<RecoveryProposal>>(emptyList())
 
     override val goals: StateFlow<List<Goal>> = _goals.asStateFlow()
-    override val tasks: StateFlow<List<Task>> = _tasks.asStateFlow()
-    override val logs: StateFlow<List<DailyLog>> = _logs.asStateFlow()
-    override val drafts: StateFlow<Map<String, PlanDraft>> = _drafts.asStateFlow()
-    override val recoveries: StateFlow<List<RecoveryProposal>> = _recoveries.asStateFlow()
 
     private val _rounds = MutableStateFlow<List<StudyRound>>(emptyList())
     private val _sessions = MutableStateFlow<List<StudySession>>(emptyList())
@@ -83,8 +67,6 @@ class LocalStudyRepository(
 
     override fun deleteGoal(id: String) {
         _goals.update { list -> list.filterNot { it.id == id } }
-        _tasks.update { list -> list.filterNot { it.goalId == id } }
-        _drafts.update { it - id }
         _rounds.update { list -> list.filterNot { it.goalId == id } }
         _sessions.update { list -> list.filterNot { it.goalId == id } }
         _roadmapDrafts.update { it - id }
@@ -98,158 +80,9 @@ class LocalStudyRepository(
         }
     }
 
-    override fun saveDraft(draft: PlanDraft) {
-        _drafts.update { it + (draft.goalId to draft) }
-        goal(draft.goalId)?.let { updateGoal(it.copy(planStatus = PlanStatus.DRAFT)) }
-    }
-
-    override fun updateDraft(draft: PlanDraft) {
-        _drafts.update { it + (draft.goalId to draft) }
-    }
-
-    override fun approveDraft(goalId: String, todayEpochDay: Long): Int {
-        val draft = _drafts.value[goalId] ?: return 0
-        val goal = goal(goalId) ?: return 0
-        val now = System.currentTimeMillis()
-        val newTasks = draft.items.sortedBy { it.date }.mapIndexed { i, item ->
-            Task(
-                id = "p-" + UUID.randomUUID().toString(),
-                ownerId = ownerId,
-                goalId = goalId,
-                title = item.title,
-                estimatedMinutes = item.minutes,
-                priority = goal.priority,
-                status = TaskStatus.TODO,
-                plannedDate = item.date,
-                week = item.week,
-                order = i,
-                createdAt = now,
-                updatedAt = now,
-            )
-        }
-        _tasks.update { list ->
-            list.filterNot {
-                it.goalId == goalId && !it.isDone && (it.plannedDate ?: Long.MAX_VALUE) >= todayEpochDay && (it.actualMinutes ?: 0) == 0
-            } + newTasks
-        }
-        _drafts.update { it - goalId }
-        updateGoal(goal.copy(planStatus = PlanStatus.APPROVED))
-        return newTasks.size
-    }
-
-    override fun task(id: String): Task? = _tasks.value.firstOrNull { it.id == id }
-
-    override fun setTaskDone(id: String, done: Boolean) {
-        val now = System.currentTimeMillis()
-        _tasks.update { list ->
-            list.map { t ->
-                if (t.id != id) t
-                else if (done) t.copy(
-                    status = TaskStatus.DONE,
-                    completedAt = t.completedAt ?: now,
-                    actualMinutes = t.actualMinutes?.takeIf { it > 0 } ?: t.estimatedMinutes,
-                    missReason = null,
-                    updatedAt = now,
-                )
-                else t.copy(status = TaskStatus.TODO, completedAt = null, updatedAt = now)
-            }
-        }
-    }
-
-    override fun addTask(task: Task): Task {
-        val now = System.currentTimeMillis()
-        val saved = task.copy(
-            id = task.id.ifEmpty { "t-" + UUID.randomUUID().toString() },
-            ownerId = ownerId,
-            order = task.order.takeIf { it > 0 } ?: (_tasks.value.count { it.plannedDate == task.plannedDate } + 1000),
-            createdAt = now,
-            updatedAt = now,
-        )
-        _tasks.update { it + saved }
-        return saved
-    }
-
-    override fun updateTask(task: Task) {
-        val saved = task.copy(updatedAt = System.currentTimeMillis())
-        _tasks.update { list -> list.map { if (it.id == task.id) saved else it } }
-    }
-
-    override fun deleteTask(id: String) {
-        _tasks.update { list -> list.filterNot { it.id == id } }
-    }
-
-    override fun saveDayLog(date: Long, entries: List<DayLogEntry>, tags: List<RetroTag>, memo: String) {
-        val now = System.currentTimeMillis()
-        val byId = entries.associateBy { it.taskId }
-        _tasks.update { list ->
-            list.map { t ->
-                val e = byId[t.id] ?: return@map t
-                t.copy(
-                    status = if (e.done) TaskStatus.DONE else TaskStatus.TODO,
-                    completedAt = if (e.done) t.completedAt ?: now else null,
-                    actualMinutes = e.actualMinutes,
-                    missReason = if (e.done) null else e.reason,
-                    updatedAt = now,
-                )
-            }
-        }
-        val log = DailyLog(id = "log-$date", ownerId = ownerId, date = date, tags = tags, memo = memo, savedAt = now)
-        _logs.update { list -> list.filterNot { it.date == date } + log }
-    }
-
-    override fun applyRecovery(
-        proposal: RecoveryProposal,
-        carriedTaskIds: List<String>,
-        newTasks: List<Task>,
-        moves: Map<String, Long>,
-    ): RecoveryProposal {
-        val now = System.currentTimeMillis()
-        val id = proposal.id.ifEmpty { "rh-" + UUID.randomUUID().toString() }
-        val carried = carriedTaskIds.toSet()
-        val added = newTasks.mapIndexed { i, t ->
-            t.copy(
-                id = t.id.ifEmpty { "rc-" + UUID.randomUUID().toString() },
-                ownerId = ownerId,
-                fromRecoveryId = id,
-                order = -10 + i,
-                createdAt = now,
-                updatedAt = now,
-            )
-        }
-        _tasks.update { list ->
-            list.map { t ->
-                when {
-                    t.id in carried -> {
-                        // 이미 한 시간만 남기고 '복구됨'으로: 진행률에서 한 만큼은 그대로 인정해요
-                        val credited = minOf(t.actualMinutes ?: 0, t.estimatedMinutes)
-                        t.copy(
-                            originalMinutes = t.originalMinutes ?: t.estimatedMinutes,
-                            estimatedMinutes = credited,
-                            status = if (credited > 0) TaskStatus.DONE else TaskStatus.TODO,
-                            completedAt = if (credited > 0) t.completedAt ?: now else null,
-                            carriedOver = true,
-                            recoveryHandled = true,
-                            updatedAt = now,
-                        )
-                    }
-                    t.id in moves -> t.copy(plannedDate = moves.getValue(t.id), updatedAt = now)
-                    else -> t
-                }
-            } + added
-        }
-        val saved = proposal.copy(id = id, ownerId = ownerId, status = ProposalStatus.APPLIED, createdAt = now, appliedAt = now)
-        _recoveries.update { it + saved }
-        return saved
-    }
-
     override fun resetSampleData() {
-        val sample = SampleData.build(today(), ownerId)
-        val rs = RoundSampleData.build(today(), ownerId, sample.goals)
+        val rs = RoundSampleData.build(today(), ownerId, SampleData.goals(today(), ownerId))
         _goals.value = rs.goals
-        _tasks.value = sample.tasks
-        _logs.value = sample.logs
-        _drafts.value = emptyMap()
-        _recoveries.value = emptyList()
         _rounds.value = rs.rounds
         _sessions.value = rs.sessions
         _roadmapDrafts.value = rs.drafts

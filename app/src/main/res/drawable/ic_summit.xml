@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 정상 도착 팝업의 작은 산 + 깃발 (프로토타입 sp2-flag) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="72dp"
+    android:height="48dp"
+    android:viewportWidth="120"
+    android:viewportHeight="80">
+    <path
+        android:fillColor="#A9DCCB"
+        android:pathData="M10,78 L54,24 Q60,17 66,24 L110,78Z" />
+    <path
+        android:fillColor="#8CCBB6"
+        android:pathData="M60,20 Q63,19 66,24 L110,78 L74,78 Q70,46 60,20Z" />
+    <path
+        android:fillColor="#7A5A3A"
+        android:pathData="M60,0 L60,0 A1.5,1.5 0,0 1,61.5 1.5 L61.5,21.5 A1.5,1.5 0,0 1,60 23 A1.5,1.5 0,0 1,58.5 21.5 L58.5,1.5 A1.5,1.5 0,0 1,60 0Z" />
+    <path
+        android:fillColor="#E28C72"
+        android:pathData="M61.5,1 C70,-2 76,6 86,2 L81.5,9.5 L86,17 C76,21 70,13 61.5,15Z" />
+</vector>
