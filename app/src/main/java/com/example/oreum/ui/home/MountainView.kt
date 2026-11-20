@@ -399,16 +399,6 @@ class MountainView @JvmOverloads constructor(
                 c.drawText(context.getString(R.string.home_next_label), tx + w / 2, ty + 21.5f, textPaint)
             }
 
-            // 방금 오른 칸에 퍼지는 흰 링
-            if (qa != null && animT in 0.2f..1.2f) {
-                val f = animT - 0.2f
-                val pt = Trail.at(cur.toFloat() / cps)
-                linePaint.color = 0xFFFFFFFF.toInt()
-                linePaint.alpha = ((0.9f * (1f - f)) * 255).roundToInt()
-                linePaint.strokeWidth = 5f
-                c.drawCircle(pt[0], pt[1], 18f + 42f * f, linePaint)
-                linePaint.alpha = 255
-            }
         }
     }
 

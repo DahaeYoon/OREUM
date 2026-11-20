@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- AI 로드맵 · 1구간 계획 (시뮬레이션): 요약 숫자 · 전체 로드맵 · 1구간 할 일 · 재생성 / 나중에 / 승인하고 시작 -->
+<!-- AI 로드맵 · 1구간 계획 (시뮬레이션): 요약 숫자 · 전체 로드맵 · 1구간 할 일 · 나중에 / 승인하고 시작 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -322,19 +322,6 @@
                             android:textSize="16sp"
                             android:textStyle="bold"
                             tools:text="요구사항 분석" />
-
-                        <TextView
-                            android:id="@+id/text_variant"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:background="@drawable/bg_badge"
-                            android:paddingHorizontal="8dp"
-                            android:paddingVertical="3dp"
-                            android:textColor="@color/oreum_forest_deep"
-                            android:textSize="11sp"
-                            android:textStyle="bold"
-                            tools:text="기본 구성" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -422,25 +409,10 @@
                     android:orientation="horizontal">
 
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_regen"
-                        style="@style/Widget.OREUM.Button.Outline"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:paddingHorizontal="4dp"
-                        android:text="@string/plan_review_regen"
-                        app:icon="@drawable/ic_spark"
-                        app:iconGravity="textStart"
-                        app:iconPadding="4dp"
-                        app:iconSize="16dp"
-                        app:iconTint="@color/oreum_dark_text" />
-
-                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_later"
                         style="@style/Widget.OREUM.Button.Outline"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
                         android:layout_weight="1"
                         android:paddingHorizontal="4dp"
                         android:text="@string/plan_review_later" />

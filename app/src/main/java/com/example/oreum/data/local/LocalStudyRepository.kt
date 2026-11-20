@@ -272,14 +272,6 @@ class LocalStudyRepository(
         return draft
     }
 
-    override fun regenerateRoadmap(goalId: String, today: Long): RoadmapDraft? {
-        val g = goal(goalId) ?: return null
-        val old = _roadmapDrafts.value[goalId] ?: return generateRoadmap(goalId, today)
-        val draft = RoundEngine.regenerate(g, old, today)
-        _roadmapDrafts.update { it + (goalId to draft) }
-        return draft
-    }
-
     override fun updateRoadmapDraft(draft: RoadmapDraft) {
         _roadmapDrafts.update { it + (draft.goalId to draft) }
     }

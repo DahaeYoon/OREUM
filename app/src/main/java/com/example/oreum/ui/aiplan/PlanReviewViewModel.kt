@@ -24,7 +24,7 @@ data class PlanReviewUiState(
     val foldOpen: Boolean = false,
 )
 
-/** AI 로드맵 · 1구간 계획 확인 · 항목 수정 · 재생성 · 승인 (시뮬레이션) */
+/** AI 로드맵 · 1구간 계획 확인 · 항목 수정 · 승인 (시뮬레이션) */
 class PlanReviewViewModel(
     savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
@@ -48,9 +48,6 @@ class PlanReviewViewModel(
     fun toggleFold() {
         foldOpen.value = !foldOpen.value
     }
-
-    /** 재생성: 로드맵은 그대로, 1구간 구성만 바뀌어요 (직접 고친 항목은 사라짐) */
-    fun regenerate(): RoadmapDraft? = repository.regenerateRoadmap(goalId, today())
 
     /** 승인하고 시작: 1구간이 바로 진행 중이 돼요 */
     fun approve(): StudyRound? = repository.approveRoadmap(goalId, today())

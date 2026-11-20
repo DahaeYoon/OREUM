@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- STEP 7 홈 (프로토타입 홈): 산(배경 · 끌어서 둘러보기) + 인사말 + 아래 카드 두 장(산 · 오늘 계획, 옆으로 넘김) -->
+<!-- 홈 (1차): 산(배경 · 끌어서 둘러보기) + 인사말 + 아래 패널 하나(산 고르기 · 다음 할 일 · 항목 모두 보기 · 로드맵 진행률) -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -72,7 +72,7 @@
         tools:text="미완료 1개 · AI 복구"
         tools:visibility="visible" />
 
-    <!-- 아래 카드 두 장: 옆으로 넘겨요 -->
+    <!-- 아래 패널 (1차부터 카드 한 장) -->
     <com.example.oreum.ui.home.HomePager
         android:id="@+id/pager"
         android:layout_width="match_parent"
@@ -90,7 +90,7 @@
             <LinearLayout
                 android:id="@+id/panel"
                 android:layout_width="match_parent"
-                android:layout_height="182dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
                 android:orientation="vertical"
                 android:paddingStart="16dp"
@@ -105,15 +105,10 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
-                    <include
-                        android:id="@+id/ind_page_climb"
-                        layout="@layout/view_home_page_ind" />
-
                     <FrameLayout
                         android:id="@+id/btn_goal"
                         android:layout_width="0dp"
                         android:layout_height="28dp"
-                        android:layout_marginStart="6dp"
                         android:layout_weight="1"
                         android:background="@drawable/bg_home_goal_switch"
                         android:paddingStart="10dp"
@@ -217,7 +212,41 @@
                         tools:text="완료" />
                 </LinearLayout>
 
-                <!-- 진행률 -->
+                <!-- 이번 구간: 항목 모두 보기 (학습 결과 기록은 5단계에서 추가) -->
+                <LinearLayout
+                    android:id="@+id/row_round_acts"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_round_all"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="40dp"
+                        android:layout_weight="1"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:minHeight="40dp"
+                        android:paddingHorizontal="8dp"
+                        android:textColor="@color/oreum_dark_text"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="#B8FFFFFF"
+                        app:cornerRadius="12dp"
+                        app:icon="@drawable/ic_nav_study"
+                        app:iconGravity="textStart"
+                        app:iconPadding="6dp"
+                        app:iconSize="15dp"
+                        app:iconTint="@color/oreum_dark_text"
+                        app:strokeColor="#F2FFFFFF"
+                        tools:text="항목 4개 모두 보기" />
+                </LinearLayout>
+
+                <!-- 로드맵 진행률 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -270,146 +299,5 @@
             </FrameLayout>
         </FrameLayout>
 
-        <!-- 2. 오늘 계획 카드 -->
-        <FrameLayout
-            android:id="@+id/page_today"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:clipChildren="false">
-
-            <LinearLayout
-                android:id="@+id/sheet_today"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
-                android:orientation="vertical"
-                android:padding="14dp">
-
-                <include
-                    android:id="@+id/ind_page_today"
-                    layout="@layout/view_home_page_ind" />
-
-                <!-- 오늘의 학습 진행률 -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="58dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_home_card14"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="11dp">
-
-                    <com.example.oreum.ui.home.RingView
-                        android:id="@+id/ring_today"
-                        android:layout_width="38dp"
-                        android:layout_height="38dp" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="10dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/home_today_progress"
-                            android:textColor="@color/oreum_dark_text"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/text_today_cap"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:maxLines="1"
-                            android:textColor="@color/oreum_ink2"
-                            android:textSize="11sp"
-                            tools:text="계획 3시간 30분 · 완료 1시간 30분 · 1/2개" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/list_banners"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical" />
-
-                <com.example.oreum.ui.home.MaxHeightScrollView
-                    android:id="@+id/scroll_today"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_home_card14">
-
-                    <LinearLayout
-                        android:id="@+id/list_today"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:paddingHorizontal="12dp"
-                        android:paddingVertical="2dp" />
-                </com.example.oreum.ui.home.MaxHeightScrollView>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="34dp"
-                    android:layout_marginTop="10dp"
-                    android:orientation="horizontal">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_today_primary"
-                        style="@style/Widget.OREUM.Button.SheetPrimary"
-                        android:layout_width="0dp"
-                        android:layout_height="34dp"
-                        android:layout_weight="1"
-                        android:minHeight="34dp"
-                        android:paddingHorizontal="10dp"
-                        android:textSize="12.5sp"
-                        app:cornerRadius="10dp"
-                        app:iconGravity="textStart"
-                        app:iconPadding="5dp"
-                        app:iconSize="14dp"
-                        app:iconTint="@color/white"
-                        tools:text="실제 학습시간 기록" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_today_plan"
-                        style="@style/Widget.OREUM.Button.SheetOutline"
-                        android:layout_width="0dp"
-                        android:layout_height="34dp"
-                        android:layout_marginStart="6dp"
-                        android:layout_weight="1"
-                        android:minHeight="34dp"
-                        android:paddingHorizontal="10dp"
-                        android:text="@string/home_all_plan"
-                        android:textSize="12.5sp"
-                        app:backgroundTint="#8CFFFFFF"
-                        app:cornerRadius="10dp"
-                        app:strokeColor="#E6FFFFFF" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <FrameLayout
-                android:id="@+id/grab_today"
-                android:layout_width="44dp"
-                android:layout_height="15dp"
-                android:layout_gravity="top|center_horizontal"
-                android:background="@drawable/bg_home_grab"
-                android:contentDescription="@string/home_fold">
-
-                <ImageView
-                    android:id="@+id/icon_grab_today"
-                    android:layout_width="13dp"
-                    android:layout_height="13dp"
-                    android:layout_gravity="center"
-                    android:importantForAccessibility="no"
-                    android:src="@drawable/ic_expand_more"
-                    app:tint="#6B807B" />
-            </FrameLayout>
-        </FrameLayout>
     </com.example.oreum.ui.home.HomePager>
 </FrameLayout>

@@ -104,9 +104,6 @@ interface StudyRepository {
     /** AI 로드맵 + 1구간 초안 만들기 (목표는 '승인 대기'가 돼요) */
     fun generateRoadmap(goalId: String, today: Long): RoadmapDraft?
 
-    /** 재생성: 로드맵은 그대로, 1구간 구성만 바꿔요 */
-    fun regenerateRoadmap(goalId: String, today: Long): RoadmapDraft?
-
     /** 검토 화면에서 고친 1구간 항목 저장 */
     fun updateRoadmapDraft(draft: RoadmapDraft)
 
