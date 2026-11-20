@@ -7,9 +7,16 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
+import com.example.oreum.data.repository.AuthRepositoryProvider
+import com.example.oreum.data.repository.StudyRepositoryProvider
 import com.example.oreum.databinding.ActivityMainBinding
+import com.example.oreum.ui.home.HomePrefs
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 
 /**
  * Single Activity: 화면은 모두 Fragment로 만들고, 이 Activity는
@@ -43,6 +50,18 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         val navController = navHostFragment.navController
+
+        // 로그인한 계정이 바뀌면 그 계정의 목표 · 구간 · 기록으로 바꿔요 (새 계정은 빈 상태)
+        lifecycleScope.launch {
+            AuthRepositoryProvider.instance.currentUser
+                .map { it?.id }
+                .distinctUntilChanged()
+                .collect { id ->
+                    StudyRepositoryProvider.instance.switchOwner(id)
+                    HomePrefs.goalId = null
+                    HomePrefs.picked = false
+                }
+        }
 
         binding.bottomNav.setupWithNavController(navController)
         navController.addOnDestinationChangedListener { _, destination, _ ->

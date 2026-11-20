@@ -30,8 +30,14 @@ interface StudyRepository {
     /** completed = true면 완료한 산(오른 산)으로, false면 다시 진행 중으로 */
     fun setGoalCompleted(id: String, completed: Boolean)
 
-    /** 샘플 데이터로 처음 상태 되돌리기 (마이 → 샘플 데이터 초기화) */
+    /** 지금 계정의 데이터를 샘플로 채우기 (마이 → 샘플 데이터 불러오기) */
     fun resetSampleData()
+
+    /** 지금 계정의 목표 · 구간 · 학습 기록을 모두 지우기 (새 사용자처럼 빈 상태로) */
+    fun clearAll()
+
+    /** 로그인한 계정이 바뀌면 그 계정의 데이터로 바꿔요 (null = 로그아웃) */
+    fun switchOwner(ownerId: String?)
 
     // ======================= 구간 기반 학습 (1차) =======================
     // 날짜는 모두 epoch day(Long). AI 결과는 모두 시뮬레이션이고, 승인해야 확정돼요.

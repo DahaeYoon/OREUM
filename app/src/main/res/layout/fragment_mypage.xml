@@ -156,6 +156,23 @@
                         android:background="#14285041" />
 
                     <TextView
+                        android:id="@+id/row_clear"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="16dp"
+                        android:text="@string/mypage_clear"
+                        android:textColor="@color/oreum_dark_text"
+                        android:textSize="15sp" />
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginHorizontal="16dp"
+                        android:background="#14285041" />
+
+                    <TextView
                         android:id="@+id/row_logout"
                         android:layout_width="match_parent"
                         android:layout_height="52dp"

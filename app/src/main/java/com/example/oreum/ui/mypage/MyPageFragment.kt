@@ -23,7 +23,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 
 /**
- * 마이 (1차): 프로필 · 샘플 데이터 초기화 · 로그아웃.
+ * 마이 (1차): 프로필 · 샘플 데이터 불러오기 · 데이터 모두 지우기 · 로그아웃.
  * 학습 알림 · 기본 학습 설정은 2차 범위예요.
  */
 class MyPageFragment : Fragment(R.layout.fragment_mypage) {
@@ -46,6 +46,7 @@ class MyPageFragment : Fragment(R.layout.fragment_mypage) {
         }
 
         binding.rowReset.setOnClickListener { confirmReset() }
+        binding.rowClear.setOnClickListener { confirmClear() }
         binding.rowLogout.setOnClickListener { confirmLogout() }
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -60,7 +61,22 @@ class MyPageFragment : Fragment(R.layout.fragment_mypage) {
         }
     }
 
-    /** 샘플 데이터 초기화: 목표 · 구간 · 학습 기록이 처음 상태로 돌아가요 */
+    /** 데이터 모두 지우기: 새로 가입한 것처럼 빈 상태로 (처음 사용하는 흐름 확인용) */
+    private fun confirmClear() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.mypage_clear_title)
+            .setMessage(R.string.mypage_clear_body)
+            .setNegativeButton(R.string.study_form_cancel, null)
+            .setPositiveButton(R.string.mypage_clear_ok) { _, _ ->
+                repository.clearAll()
+                HomePrefs.goalId = null
+                HomePrefs.picked = false
+                Toast.makeText(requireContext(), R.string.toast_mypage_clear, Toast.LENGTH_SHORT).show()
+            }
+            .show()
+    }
+
+    /** 샘플 데이터 불러오기: 지금 계정의 목표 · 구간 · 학습 기록을 샘플로 바꿔요 */
     private fun confirmReset() {
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.mypage_reset_title)

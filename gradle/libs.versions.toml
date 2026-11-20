@@ -12,6 +12,11 @@ constraintlayout = "2.2.2"
 fragmentKtx = "1.9.1"
 lifecycle = "2.11.0"
 navigation = "2.10.2"
+# 1번 Firebase Auth (firebase.google.com 출시 노트 기준, 2026-11)
+firebaseBom = "35.2.0"
+googleServices = "4.6.0"
+# Firebase 라이브러리(Kotlin 2.4 메타데이터)를 읽으려면 Kotlin 2.4 이상 필요
+kotlin = "2.4.20"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -27,6 +32,10 @@ androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifec
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
 androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigation" }
 androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigation" }
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
+kotlin-gradle-plugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
