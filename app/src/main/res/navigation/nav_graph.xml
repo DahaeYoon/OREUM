@@ -48,6 +48,9 @@
         <action
             android:id="@+id/action_home_to_goalForm"
             app:destination="@id/goalFormFragment" />
+        <action
+            android:id="@+id/action_home_to_goalDetail"
+            app:destination="@id/goalDetailFragment" />
     </fragment>
 
     <fragment

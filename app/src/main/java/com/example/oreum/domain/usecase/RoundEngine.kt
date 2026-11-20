@@ -215,45 +215,14 @@ object RoundEngine {
         )
     }
 
-    // ---------------- 첫 생성 · 재생성 ----------------
-    private class Variant(val label: String, val adj: Double, val split: Int? = null, val quizFirst: Boolean = false)
-
-    private val VARIANTS = listOf(
-        Variant("기본 구성", 1.0),
-        Variant("가볍게 시작", 0.7),
-        Variant("짧게 나눠서", 1.0, split = 30),
-        Variant("넉넉하게 한 번에", 1.4),
-        Variant("문제 먼저", 1.0, quizFirst = true),
-    )
-
-    fun variantLabel(variant: Int): String = VARIANTS[variant.mod(VARIANTS.size)].label
-
-    /** AI 로드맵 + 1구간 계획 (variant: 재생성 번호, 로드맵은 그대로 두고 1구간 구성만 바뀜) */
-    fun genDraft(g: Goal, today: Long, variant: Int = 0, roadmap: List<RoadmapStage>? = null): RoadmapDraft {
-        val rm = roadmap ?: genRoadmap(g, today)
-        val v = VARIANTS[variant.mod(VARIANTS.size)]
+    // ---------------- 첫 생성 ----------------
+    /** AI 로드맵 + 1구간 계획 (재생성은 2차) */
+    fun genDraft(g: Goal, today: Long): RoadmapDraft {
+        val rm = genRoadmap(g, today)
         val nt = nextTopic(g.id, rm, 0, emptyList())
-        var r = makeRound(g, rm, 1, 0, nt?.topic ?: rm.firstOrNull()?.title, today, emptyList(), adj = v.adj)
-        v.split?.let { s ->
-            r = r.copy(items = r.items.flatMap { i ->
-                if (i.minutes <= s + 10) listOf(i)
-                else {
-                    val n = ceil(i.minutes / s.toDouble()).toInt()
-                    (0 until n).map { k ->
-                        i.copy(id = newId("ri"), title = "${i.title} · ${k + 1}/$n", minutes = if (k < n - 1) s else i.minutes - s * (n - 1))
-                    }
-                }
-            })
-        }
-        if (v.quizFirst) r = r.copy(items = r.items.sortedByDescending { QUIZ.containsMatchIn(it.title) })
-        return RoadmapDraft(goalId = g.id, roadmap = rm, round = r, createdOn = today, variant = variant.mod(VARIANTS.size))
+        val r = makeRound(g, rm, 1, 0, nt?.topic ?: rm.firstOrNull()?.title, today, emptyList())
+        return RoadmapDraft(goalId = g.id, roadmap = rm, round = r, createdOn = today)
     }
-
-    private val QUIZ = Regex("퀴즈|예제|문제")
-
-    /** 재생성: 다음 구성으로 1구간을 다시 만들어요 */
-    fun regenerate(g: Goal, draft: RoadmapDraft, today: Long): RoadmapDraft =
-        genDraft(g, today, draft.variant + 1, draft.roadmap)
 
     // ---------------- 다음 구간 추천 ----------------
     private fun reasonKey(r: MissReason?) = when (r) {

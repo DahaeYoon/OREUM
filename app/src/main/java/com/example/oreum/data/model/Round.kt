@@ -108,8 +108,6 @@ data class RoadmapDraft(
     val roadmap: List<RoadmapStage> = emptyList(),
     val round: StudyRound = StudyRound(),
     val createdOn: Long = 0L,
-    /** 재생성할 때마다 바뀌는 1구간 구성 번호 */
-    val variant: Int = 0,
 )
 
 /** 구간 결과를 보고 AI가 제안한 다음 구간 (승인 전, 시뮬레이션) */

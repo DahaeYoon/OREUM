@@ -103,7 +103,7 @@ class GoalDetailFragment : Fragment(R.layout.fragment_goal_detail) {
                 binding.textStateBody.setText(R.string.goal_detail_draft_body)
                 binding.btnState.isVisible = true
                 binding.btnState.setText(R.string.study_do_review)
-                binding.btnState.setOnClickListener { openReview(regenerate = false) }
+                binding.btnState.setOnClickListener { openReview(generate = false) }
             }
             goal.planStatus == PlanStatus.NONE || goal.roadmap.isEmpty() -> {
                 binding.cardState.isVisible = true
@@ -111,7 +111,7 @@ class GoalDetailFragment : Fragment(R.layout.fragment_goal_detail) {
                 binding.textStateBody.setText(R.string.goal_detail_none_body)
                 binding.btnState.isVisible = true
                 binding.btnState.setText(R.string.goal_detail_make)
-                binding.btnState.setOnClickListener { openReview(regenerate = true) }
+                binding.btnState.setOnClickListener { openReview(generate = true) }
             }
             proposal != null -> {
                 binding.cardState.isVisible = true
@@ -262,8 +262,8 @@ class GoalDetailFragment : Fragment(R.layout.fragment_goal_detail) {
         else getString(R.string.round_date_span, first, DateText.monthDay(LocalDate.ofEpochDay(d.last())), d.size)
     }
 
-    private fun openReview(regenerate: Boolean) {
-        if (regenerate) PlanDrafts.generateFor(viewModel.goalId)
+    private fun openReview(generate: Boolean) {
+        if (generate) PlanDrafts.generateFor(viewModel.goalId)
         findNavController().navigate(
             R.id.action_goalDetail_to_planReview,
             Bundle().apply { putString(GoalFormViewModel.ARG_GOAL_ID, viewModel.goalId) },

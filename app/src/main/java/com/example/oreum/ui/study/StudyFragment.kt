@@ -114,7 +114,7 @@ class StudyFragment : Fragment(R.layout.fragment_study) {
                 item.textDo.setTextColor(color)
                 item.iconDo.setColorFilter(color)
                 item.btnDo.setBackgroundResource(if (wait) R.drawable.bg_goal_do_wait else R.drawable.bg_goal_do)
-                item.btnDo.setOnClickListener { openPlanReview(goal.id, regenerate = false) }
+                item.btnDo.setOnClickListener { openPlanReview(goal.id) }
             }
             item.root.alpha = if (card.completed) 0.85f else 1f
             item.main.setOnClickListener { openDetail(goal.id) }
@@ -149,11 +149,11 @@ class StudyFragment : Fragment(R.layout.fragment_study) {
 
     /**
      * AI 로드맵 · 1구간 계획 화면으로 이동 (시뮬레이션).
-     * 승인 대기 초안이 있으면 그대로 보여 주고, 없거나 다시 생성이면 새로 만들어요.
+     * 승인 대기 초안이 있으면 그대로 보여 주고, 없으면 새로 만들어요.
      */
-    fun openPlanReview(goalId: String, regenerate: Boolean) {
+    fun openPlanReview(goalId: String) {
         val repository = StudyRepositoryProvider.instance
-        if (regenerate || repository.roadmapDrafts.value[goalId] == null) PlanDrafts.generateFor(goalId, repository)
+        if (repository.roadmapDrafts.value[goalId] == null) PlanDrafts.generateFor(goalId, repository)
         findNavController().navigate(
             R.id.action_study_to_planReview,
             Bundle().apply { putString(GoalFormViewModel.ARG_GOAL_ID, goalId) },

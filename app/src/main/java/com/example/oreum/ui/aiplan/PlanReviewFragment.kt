@@ -25,7 +25,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
-/** AI 로드맵 · 1구간 계획 (시뮬레이션): 확인 · 항목 수정 · 재생성 · 나중에 · 승인하고 시작 → 홈 */
+/** AI 로드맵 · 1구간 계획 (시뮬레이션): 확인 · 항목 수정 · 나중에 · 승인하고 시작 → 홈 */
 class PlanReviewFragment : Fragment(R.layout.fragment_plan_review) {
 
     private var _binding: FragmentPlanReviewBinding? = null
@@ -47,17 +47,6 @@ class PlanReviewFragment : Fragment(R.layout.fragment_plan_review) {
                 override fun handleOnBackPressed() = later()
             },
         )
-        binding.btnRegen.setOnClickListener {
-            MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.round_regen_title)
-                .setMessage(R.string.round_regen_body)
-                .setNegativeButton(R.string.study_form_cancel, null)
-                .setPositiveButton(R.string.plan_regen_ok) { _, _ ->
-                    val d = viewModel.regenerate() ?: return@setPositiveButton
-                    toast(getString(R.string.toast_round_regen, RoundEngine.variantLabel(d.variant)))
-                }
-                .show()
-        }
         binding.btnAddItem.setOnClickListener {
             DraftItemSheet.add(viewModel.goalId).show(childFragmentManager, DraftItemSheet.TAG)
         }
@@ -109,7 +98,6 @@ class PlanReviewFragment : Fragment(R.layout.fragment_plan_review) {
         // 1구간 할 일
         val round = draft.round
         binding.textRoundTopic.text = round.displayTopic
-        binding.textVariant.text = RoundEngine.variantLabel(draft.variant)
         binding.textRoundMinutes.text = getString(R.string.round_review_est, DateText.minutes(round.estimatedMinutes))
         binding.itemList.removeAllViews()
         round.items.forEach { item ->

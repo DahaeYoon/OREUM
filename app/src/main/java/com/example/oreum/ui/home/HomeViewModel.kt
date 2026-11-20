@@ -2,24 +2,22 @@ package com.example.oreum.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.oreum.data.model.DailyLog
 import com.example.oreum.data.model.Goal
 import com.example.oreum.data.model.PlanStatus
-import com.example.oreum.data.model.Task
-import com.example.oreum.data.model.TrailOrder
+import com.example.oreum.data.model.RoundItem
+import com.example.oreum.data.model.RoundStatus
+import com.example.oreum.data.model.StudyRound
 import com.example.oreum.data.repository.AuthRepository
 import com.example.oreum.data.repository.AuthRepositoryProvider
 import com.example.oreum.data.repository.StudyRepository
 import com.example.oreum.data.repository.StudyRepositoryProvider
 import com.example.oreum.domain.usecase.HomeMountain
-import com.example.oreum.domain.usecase.PlanCalendar
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import java.time.LocalDate
-import kotlin.math.min
 
 /** 홈에서 고른 산 (앱이 켜져 있는 동안 기억). null = 전체 목표 합쳐 보기 */
 object HomePrefs {
@@ -27,42 +25,40 @@ object HomePrefs {
     var picked: Boolean = false
 }
 
-/** 산 페이지의 카드 종류 */
+/** 산 아래 패널의 카드 종류 (프로토타입 홈 next-card) */
 sealed interface NextCard {
+    /** 로드맵이 없어요 → AI 로드맵 */
     data class NoPlan(val goalId: String) : NextCard
+    /** AI 로드맵 승인 대기 → 확인 */
     data class Draft(val goalId: String) : NextCard
-    data class Next(val task: Task, val goalTitle: String, val isToday: Boolean) : NextCard
+    /** AI 다음 구간 추천 도착 → 확인 (round = null이면 마지막 → 정상 도착) */
+    data class Proposal(val goalId: String, val round: StudyRound?) : NextCard
+    /** 승인했지만 시작 전 구간 → 시작 */
+    data class Ready(val round: StudyRound, val goalTitle: String) : NextCard
+    /** 진행 중 구간의 다음 항목 → 완료 */
+    data class Next(val round: StudyRound, val item: RoundItem, val goalTitle: String) : NextCard
+    /** 구간 항목을 모두 끝냄 → 결과 제출 */
+    data class AllDone(val round: StudyRound, val goalTitle: String) : NextCard
     data object Empty : NextCard
     data object Top : NextCard
 }
-
-data class TodayItem(val task: Task, val goalTitle: String)
 
 data class HomeUiState(
     val loaded: Boolean = false,
     val nickname: String = "",
     /** null = 전체 목표 */
     val goal: Goal? = null,
-    /** 마감 표시에 쓰는 목표 (전체일 때는 가장 가까운 남은 목표) */
-    val dueGoal: Goal? = null,
+    /** 마감 표시 · 카드에 쓰는 목표 (전체일 때는 지금 구간이 있는 가장 가까운 목표) */
+    val focusGoal: Goal? = null,
     val progress: HomeMountain.Progress = HomeMountain.Progress(0, 0, 0f, 0),
     val slots: List<HomeMountain.Slot> = emptyList(),
-    val order: TrailOrder = TrailOrder.PLAN_DATE,
     val next: NextCard = NextCard.Empty,
-    val today: List<TodayItem> = emptyList(),
-    val todayPlanned: Int = 0,
-    val todayCredited: Int = 0,
-    val pendingRecovery: Int = 0,
-    val unloggedDays: List<Long> = emptyList(),
-    val anyGoalWithoutPlan: Boolean = false,
+    /** 패널 버튼(항목 모두 보기)에 쓰는 지금 구간 */
+    val round: StudyRound? = null,
     val goals: List<Goal> = emptyList(),
-    val tasks: List<Task> = emptyList(),
-    val logs: List<DailyLog> = emptyList(),
-) {
-    val todayPercent: Int get() = if (todayPlanned > 0) todayCredited * 100 / todayPlanned else 0
-}
+)
 
-/** STEP 7 홈: 산(진행률 · 트랙 · 다음 할 일) + 오늘 계획 */
+/** 홈: 산(진행률 · 체크포인트 = 로드맵 단계) + 이번 구간 */
 class HomeViewModel(
     private val repository: StudyRepository = StudyRepositoryProvider.instance,
     private val auth: AuthRepository = AuthRepositoryProvider.instance,
@@ -75,68 +71,56 @@ class HomeViewModel(
         if (!HomePrefs.picked) {
             HomePrefs.goalId = repository.goals.value.firstOrNull { it.completedAt == null }?.id
             HomePrefs.picked = true
-            selected.value = HomePrefs.goalId
         }
+        selected.value = HomePrefs.goalId
     }
 
     /** 완료 애니메이션 시작점 (화면이 한 번 읽고 비워요) */
-    var animateFrom: Float? = null
-        private set
+    private var animateFrom: Float? = null
+
+    private fun today() = LocalDate.now().toEpochDay()
 
     val uiState: StateFlow<HomeUiState> =
         combine(
-            combine(repository.goals, repository.tasks, repository.logs) { g, t, l -> Triple(g, t, l) },
+            combine(repository.goals, repository.rounds) { g, r -> g to r },
             repository.roadmapDrafts,
+            repository.proposals,
             auth.currentUser,
             selected,
-        ) { (goals, tasks, logs), drafts, user, sel0 ->
+        ) { (goals, rounds), drafts, proposals, user, sel0 ->
             val sel = sel0?.takeIf { id -> goals.any { it.id == id } }
             val goal = goals.firstOrNull { it.id == sel }
-            val order = user?.trailOrder ?: TrailOrder.PLAN_DATE
-            val today = LocalDate.now().toEpochDay()
-            val progress = HomeMountain.progress(tasks, goals, sel)
-            val slots = HomeMountain.slots(tasks, goals, sel, order)
-            val title = { id: String? -> goals.firstOrNull { it.id == id }?.title.orEmpty() }
+            val curOf = { g: Goal -> rounds.filter { it.goalId == g.id && it.status != RoundStatus.DONE }.maxByOrNull { it.no } }
 
+            // 전체 보기: 추천 · 지금 구간이 있는 가장 가까운 목표 → 승인 대기 목표
+            val active = goals.filter { it.completedAt == null }.sortedBy { it.dueAt }
+            val focus = goal ?: active.firstOrNull { proposals.containsKey(it.id) || curOf(it) != null }
+                ?: active.firstOrNull { drafts.containsKey(it.id) } ?: active.firstOrNull()
+
+            val round = focus?.let(curOf)
             val next: NextCard = when {
-                goal != null && drafts.containsKey(goal.id) -> NextCard.Draft(goal.id)
-                goal != null && goal.planStatus == PlanStatus.NONE -> NextCard.NoPlan(goal.id)
-                else -> {
-                    val nx = HomeMountain.nextTask(tasks, goals, sel, today)
-                    when {
-                        nx != null -> NextCard.Next(nx, title(nx.goalId), nx.plannedDate == today)
-                        HomeMountain.goalTasks(tasks, goals, sel).isEmpty() -> NextCard.Empty
-                        else -> NextCard.Top
-                    }
-                }
+                focus == null -> NextCard.Empty
+                focus.completedAt != null -> NextCard.Top
+                drafts.containsKey(focus.id) -> NextCard.Draft(focus.id)
+                focus.planStatus == PlanStatus.NONE || focus.roadmap.isEmpty() -> NextCard.NoPlan(focus.id)
+                proposals.containsKey(focus.id) -> NextCard.Proposal(focus.id, proposals.getValue(focus.id).round)
+                round == null -> NextCard.Empty
+                round.status == RoundStatus.READY -> NextCard.Ready(round, focus.title)
+                else -> round.items.firstOrNull { !it.done }?.let { NextCard.Next(round, it, focus.title) }
+                    ?: NextCard.AllDone(round, focus.title)
             }
-            val active = goals.filter { it.completedAt == null }
-            val dueGoal = goal ?: active.filter { HomeMountain.progress(tasks, goals, it.id).remainingMinutes > 0 }.minByOrNull { it.dueAt }
-                ?: active.minByOrNull { it.dueAt }
-
-            val todayTasks = PlanCalendar.dayItems(tasks, today, null).filterNot { it.carriedOver }
             HomeUiState(
                 loaded = true,
                 nickname = user?.nickname.orEmpty(),
                 goal = goal,
-                dueGoal = dueGoal,
-                progress = progress,
-                slots = slots,
-                order = order,
+                focusGoal = focus,
+                progress = HomeMountain.roundProgress(goals, rounds, sel),
+                slots = HomeMountain.roundSlots(goals, rounds, sel),
                 next = next,
-                today = todayTasks.map { TodayItem(it, title(it.goalId)) },
-                todayPlanned = todayTasks.sumOf { it.estimatedMinutes },
-                todayCredited = todayTasks.sumOf { credited(it) },
-                pendingRecovery = PlanCalendar.pendingRecovery(tasks).count { t -> active.any { it.id == t.goalId } },
-                unloggedDays = PlanCalendar.unloggedDays(tasks, logs, today),
-                anyGoalWithoutPlan = goals.any { it.planStatus != PlanStatus.APPROVED },
+                round = round?.takeIf { next is NextCard.Next || next is NextCard.Ready || next is NextCard.AllDone },
                 goals = goals,
-                tasks = tasks,
-                logs = logs,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HomeUiState())
-
-    private fun credited(t: Task): Int = if (t.isDone) t.estimatedMinutes else min(t.actualMinutes ?: 0, t.estimatedMinutes)
 
     fun selectGoal(goalId: String?) {
         HomePrefs.goalId = goalId
@@ -144,65 +128,36 @@ class HomeViewModel(
         selected.value = goalId
     }
 
-    fun setOrder(order: TrailOrder) {
-        val user = auth.currentUser.value ?: return
-        auth.updateUser(user.copy(trailOrder = order))
-    }
-
     fun takeAnimateFrom(): Float? = animateFrom.also { animateFrom = null }
 
-    private fun currentRate(): Float = HomeMountain.progress(repository.tasks.value, repository.goals.value, selected.value).rate
+    private fun currentRate(): Float =
+        HomeMountain.roundProgress(repository.goals.value, repository.rounds.value, selected.value).rate
 
-    /** 산 페이지 '완료': 앞뒤 진행률을 돌려줘요 (정상 도착이면 reachedTop = true) */
-    fun completeNext(taskId: String): CompleteResult? {
-        val task = repository.task(taskId) ?: return null
+    /** 항목 완료 체크 · 해제: 앞뒤 진행률을 돌려줘요 (점이 트랙을 따라 움직여요) */
+    fun toggleItem(roundId: String, itemId: String): TickResult? {
+        val title = repository.round(roundId)?.items?.firstOrNull { it.id == itemId }?.title ?: return null
         val before = currentRate()
-        repository.setTaskDone(taskId, true)
-        val after = currentRate()
+        // 저장하면 화면이 바로 다시 그려질 수 있어서, 시작점을 먼저 넣어 둬요
         animateFrom = before
-        val top = before < 1f && after >= 1f
-        val gid = selected.value
-        if (top && gid != null) repository.setGoalCompleted(gid, true)
-        return CompleteResult(task.title, before, after, top)
-    }
-
-    /** 오늘 계획 체크 · 체크 해제 */
-    fun toggleToday(taskId: String): CompleteResult? {
-        val task = repository.task(taskId) ?: return null
-        val sel = selected.value
-        val gid = sel ?: task.goalId
-        val before = gid?.let { HomeMountain.progress(repository.tasks.value, repository.goals.value, it).rate } ?: 0f
-        val wasSel = currentRate()
-        repository.setTaskDone(taskId, !task.isDone)
-        if (sel == null || task.goalId == sel) animateFrom = wasSel
-        val after = gid?.let { HomeMountain.progress(repository.tasks.value, repository.goals.value, it).rate } ?: 0f
-        val goal = task.goalId?.let { repository.goal(it) }
-        var top = false
-        if (!task.isDone && before < 1f && after >= 1f && gid != null && (sel == null || task.goalId == sel)) {
-            // 마지막 할 일을 끝냈으면 그 목표의 산으로 (정상 도착)
-            repository.setGoalCompleted(gid, true)
-            if (sel == null) selectGoal(gid)
-            top = true
+        val r = repository.toggleItem(roundId, itemId, today())
+        if (r == null) {
+            animateFrom = null
+            return null
         }
-        // 완료를 취소해 100% 아래로 내려가면 다시 등반 중으로
-        if (task.isDone && goal?.completedAt != null && after < 1f) repository.setGoalCompleted(goal.id, false)
-        return CompleteResult(task.title, before, after, top, nowDone = !task.isDone)
-    }
-
-    /** 체크포인트에서 '완료 취소' */
-    fun undo(taskId: String): CompleteResult? {
-        val task = repository.task(taskId) ?: return null
-        if (!task.isDone || task.carriedOver) return null
-        val before = currentRate()
-        repository.setTaskDone(taskId, false)
-        animateFrom = null
-        val goal = task.goalId?.let { repository.goal(it) }
         val after = currentRate()
-        if (goal?.completedAt != null && HomeMountain.progress(repository.tasks.value, repository.goals.value, goal.id).rate < 1f) {
-            repository.setGoalCompleted(goal.id, false)
-        }
-        return CompleteResult(task.title, before, after, false, nowDone = false)
+        if (after <= before) animateFrom = null
+        val done = r.items.firstOrNull { it.id == itemId }?.done == true
+        return TickResult(title, before, after, done, r.allDone, r.no)
     }
 
-    data class CompleteResult(val title: String, val before: Float, val after: Float, val reachedTop: Boolean, val nowDone: Boolean = true)
+    fun startRound(roundId: String) = repository.startRound(roundId, today())
+
+    data class TickResult(
+        val title: String,
+        val before: Float,
+        val after: Float,
+        val nowDone: Boolean,
+        val roundAllDone: Boolean,
+        val roundNo: Int,
+    )
 }
