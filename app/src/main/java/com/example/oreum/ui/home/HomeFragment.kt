@@ -9,7 +9,6 @@ import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.view.View
 import android.view.animation.PathInterpolator
-import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.doOnLayout
@@ -40,6 +39,7 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Locale
 import kotlin.math.roundToInt
+import com.example.oreum.util.showToast
 
 /**
  * 홈 (1차): 산과 이번 구간을 한 화면에
@@ -360,7 +360,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         _binding?.panel?.invalidate()
     }
 
-    private fun toast(message: String) = Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+    private fun toast(message: String) = requireActivity().showToast(message)
     private fun color(res: Int) = requireContext().getColor(res)
     private fun dp(value: Int) = (value * resources.displayMetrics.density).roundToInt()
 

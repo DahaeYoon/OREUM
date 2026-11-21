@@ -3,7 +3,6 @@ package com.example.oreum.ui.study
 import android.graphics.Paint
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -32,6 +31,7 @@ import com.example.oreum.util.applySystemBarsPadding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import com.example.oreum.util.showToast
 
 /** 목표 상세 (계획 탭 대신): 이번 구간 체크 · 항목 추가 · 시작, 다음 구간 추천, 마감 한 줄, 전체 로드맵, 이전 구간 */
 class GoalDetailFragment : Fragment(R.layout.fragment_goal_detail) {
@@ -319,7 +319,7 @@ class GoalDetailFragment : Fragment(R.layout.fragment_goal_detail) {
     }
 
     private fun toast(text: String) {
-        Toast.makeText(requireContext().applicationContext, text, Toast.LENGTH_SHORT).show()
+        requireActivity().showToast(text)
     }
 
     override fun onDestroyView() {

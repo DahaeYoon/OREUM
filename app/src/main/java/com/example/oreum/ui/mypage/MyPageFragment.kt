@@ -3,7 +3,6 @@ package com.example.oreum.ui.mypage
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -21,6 +20,7 @@ import com.example.oreum.util.Season
 import com.example.oreum.util.applySystemBarsPadding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
+import com.example.oreum.util.showToast
 
 /**
  * 마이 (1차): 프로필 · 샘플 데이터 불러오기 · 데이터 모두 지우기 · 로그아웃.
@@ -71,7 +71,7 @@ class MyPageFragment : Fragment(R.layout.fragment_mypage) {
                 repository.clearAll()
                 HomePrefs.goalId = null
                 HomePrefs.picked = false
-                Toast.makeText(requireContext(), R.string.toast_mypage_clear, Toast.LENGTH_SHORT).show()
+                requireActivity().showToast(R.string.toast_mypage_clear)
             }
             .show()
     }
@@ -86,7 +86,7 @@ class MyPageFragment : Fragment(R.layout.fragment_mypage) {
                 repository.resetSampleData()
                 HomePrefs.goalId = null
                 HomePrefs.picked = false
-                Toast.makeText(requireContext(), R.string.toast_mypage_reset, Toast.LENGTH_SHORT).show()
+                requireActivity().showToast(R.string.toast_mypage_reset)
             }
             .show()
     }

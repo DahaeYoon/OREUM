@@ -13,7 +13,6 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.annotation.ColorInt
 import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
@@ -39,6 +38,7 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Locale
 import kotlin.math.roundToInt
+import com.example.oreum.util.showToast
 
 /** 홈 팝업 공용: 제목 · 설명 · 목록 틀 + 작은 도우미 */
 abstract class HomeListSheet : GlassSheetFragment() {
@@ -80,7 +80,7 @@ abstract class HomeListSheet : GlassSheetFragment() {
 
     protected fun divider() = View(requireContext()).apply { setBackgroundColor(0x80E1E8E5.toInt()) }
 
-    protected fun toast(msg: String) = Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+    protected fun toast(msg: String) = requireActivity().showToast(msg)
 }
 
 /** 어떤 목표의 산을 볼까요? (전체 · 진행 중 · 이미 오른 산) */

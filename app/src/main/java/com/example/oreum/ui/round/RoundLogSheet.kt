@@ -10,7 +10,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.navigation.fragment.findNavController
@@ -30,6 +29,8 @@ import com.example.oreum.util.DateText
 import com.example.oreum.util.selectChild
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.time.LocalDate
+import com.example.oreum.util.showToast
+import com.example.oreum.util.AppToast
 
 /**
  * 구간 학습 결과 기록 (프로토타입 roundLogSheet · 1차)
@@ -179,7 +180,7 @@ class RoundLogSheet : GlassSheetFragment() {
     /** 오늘 기록 저장: 구간은 그대로 이어가요 */
     private fun save() {
         repository.saveRoundLog(round.id, entries(), RoundResult(difficulty, memo()), today())
-        Toast.makeText(requireContext().applicationContext, getString(R.string.toast_round_log_saved, round.no), Toast.LENGTH_SHORT).show()
+        requireActivity().showToast(getString(R.string.toast_round_log_saved, round.no))
         dismiss()
     }
 
@@ -190,7 +191,7 @@ class RoundLogSheet : GlassSheetFragment() {
             showReasons = true
             draw()
             val msg = if (difficulty == null) getString(R.string.round_log_need_diff) else getString(R.string.log_need_reason, missing.size)
-            Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+            AppToast.showInDialog(this, msg)
             scrollTo(if (missing.isNotEmpty()) binding.rowList.getChildAt(round.items.indexOf(missing.first())) else binding.rowDiffLabel)
             return
         }

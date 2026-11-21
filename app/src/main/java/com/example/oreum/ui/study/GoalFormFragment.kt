@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
@@ -25,6 +24,7 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
+import com.example.oreum.util.showToast
 
 /** STEP 2 목표 만들기 · 수정 팝업 (프로토타입 '새 학습 목표' 시트): 6개 항목 입력 → 저장 */
 class GoalFormFragment : GlassSheetFragment() {
@@ -95,7 +95,7 @@ class GoalFormFragment : GlassSheetFragment() {
         state.savedMessage?.let { message ->
             val reviewGoalId = state.reviewGoalId
             viewModel.onClosed()
-            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+            requireActivity().showToast(message)
             if (reviewGoalId != null) {
                 // 새 목표 → 팝업을 닫고 AI 계획 생성 결과로 (승인 전에는 적용 안 함)
                 findNavController().navigate(
