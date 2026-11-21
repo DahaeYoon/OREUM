@@ -28,6 +28,6 @@ keystore.properties
 *-adminsdk-*.json
 # 개인 API 키 파일
 secrets.properties
-# Firebase 앱 설정 파일: 저장소에 올리지 않고 팀원끼리 따로 전달해요
+# Firebase 앱 설정 파일: 저장소에 올리지 않고 Firebase 콘솔에서 따로 받아요
 app/google-services.json
 .env
