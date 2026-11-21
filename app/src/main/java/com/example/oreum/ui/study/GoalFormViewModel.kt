@@ -10,7 +10,7 @@ import com.example.oreum.data.model.GoalPeriod
 import com.example.oreum.data.model.PlanStatus
 import com.example.oreum.data.repository.StudyRepository
 import com.example.oreum.data.repository.StudyRepositoryProvider
-import com.example.oreum.ui.aiplan.PlanDrafts
+import com.example.oreum.data.repository.AiRequests
 import com.example.oreum.util.DateText
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -120,8 +120,8 @@ class GoalFormViewModel(
         )
         if (original == null) {
             val saved = repository.addGoal(goal)
-            // 새 목표는 바로 AI 계획 초안을 만들어 생성 결과 화면에서 확인 · 승인해요 (자동 적용 안 함)
-            PlanDrafts.generateFor(saved.id, repository)
+            // 새 목표는 바로 AI에게 로드맵 + 1구간을 요청하고, 계획 화면에서 확인 · 승인해요 (자동 적용 안 함)
+            AiRequests.requestRoadmap(saved.id)
             _uiState.update { it.copy(savedMessage = R.string.toast_goal_added_plan, reviewGoalId = saved.id) }
         } else {
             repository.updateGoal(goal)

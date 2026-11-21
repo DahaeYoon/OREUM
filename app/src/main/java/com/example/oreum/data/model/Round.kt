@@ -81,6 +81,13 @@ data class StudyRound(
     /** 실제로 공부한 날 (StudySession 기준, 오름차순) */
     val dates: List<Long> = emptyList(),
     val result: RoundResult? = null,
+    /** 실제 AI(Gemini)가 만든 계획이면 true (샘플 · 예전 시뮬레이션은 false) */
+    val byAi: Boolean = false,
+    /** AI가 이 구간을 만들며 바꾼 점 (다음 추천 때 '지난 AI 판단'으로 함께 보내요) */
+    val aiFixes: List<String> = emptyList(),
+    /** AI가 처음 제안한 항목 수 · 분 (사용자가 고쳤는지 비교용) */
+    val aiPlannedCount: Int = 0,
+    val aiPlannedMinutes: Int = 0,
 ) {
     val estimatedMinutes: Int get() = items.sumOf { it.minutes }
     val actualMinutes: Int get() = items.sumOf { it.actualMinutes }
@@ -102,15 +109,17 @@ data class StudySession(
     val minutes: Int = 0,
 )
 
-/** AI가 처음 만든 로드맵 + 1구간 계획 (승인 전 초안, 시뮬레이션) */
+/** AI가 처음 만든 로드맵 + 1구간 계획 (승인 전 초안) */
 data class RoadmapDraft(
     val goalId: String = "",
     val roadmap: List<RoadmapStage> = emptyList(),
     val round: StudyRound = StudyRound(),
     val createdOn: Long = 0L,
+    /** 실제 AI가 만들었으면 true (샘플은 false · 화면에 '샘플'로 표시) */
+    val byAi: Boolean = false,
 )
 
-/** 구간 결과를 보고 AI가 제안한 다음 구간 (승인 전, 시뮬레이션) */
+/** 구간 결과를 보고 AI가 제안한 다음 구간 (승인 전) */
 data class NextProposal(
     val goalId: String = "",
     val fromRoundId: String = "",
@@ -132,4 +141,6 @@ data class NextProposal(
     val lastDoneCount: Int = 0,
     val lastTotal: Int = 0,
     val createdOn: Long = 0L,
+    /** 실제 AI가 만들었으면 true (샘플 · 마지막 단계 완료 안내는 false) */
+    val byAi: Boolean = false,
 )

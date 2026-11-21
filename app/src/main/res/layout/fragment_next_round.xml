@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- AI 다음 구간 추천 (프로토타입 08 · 시뮬레이션): 산 배경 위 유리 팝업
+<!-- AI 다음 구간 추천 (프로토타입 08): 산 배경 위 유리 팝업
      목표 · n구간 추천이 준비됐어요 / 단계 · 주제 · 할 일 · 예상 시간 / 지난 구간 한 줄 / 이렇게 바꿨어요 / n구간 할 일 / 완료 기준 · 추천 이유(접기) / 나중에 · 승인하기 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -50,6 +50,7 @@
                     android:orientation="horizontal">
 
                     <TextView
+                        android:id="@+id/text_ai_tag"
                         style="@style/Widget.OREUM.AiTag"
                         android:text="@string/rec_ai_tag" />
 
@@ -388,7 +389,13 @@
                     android:visibility="gone"
                     tools:text="데이터베이스 기말고사 로드맵 4단계를 모두 끝냈어요. 더 할 구간이 없어요." />
 
+                <!-- AI가 만드는 중 · 실패 (다시 시도) -->
+                <include
+                    android:id="@+id/ai_state"
+                    layout="@layout/view_ai_state" />
+
                 <LinearLayout
+                    android:id="@+id/row_buttons"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"

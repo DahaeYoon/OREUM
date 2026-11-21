@@ -23,7 +23,7 @@ import com.example.oreum.R
 import com.example.oreum.data.model.RoundStatus
 import com.example.oreum.data.model.TrailOrder
 import com.example.oreum.databinding.FragmentHomeBinding
-import com.example.oreum.ui.aiplan.PlanDrafts
+import com.example.oreum.data.repository.AiRequests
 import com.example.oreum.ui.common.GlassBackdrop
 import com.example.oreum.ui.common.GlassBackgroundDrawable
 import com.example.oreum.ui.round.NextRoundFragment
@@ -192,10 +192,18 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             is NextCard.NoPlan -> {
                 binding.textNextLabel.setText(R.string.home_new_mountain)
                 binding.textNextTitle.setText(R.string.home_no_roadmap)
-                binding.textNextCap.setText(R.string.home_no_roadmap_cap)
+                binding.textNextCap.setText(aiCap(n.ai, R.string.home_no_roadmap_cap))
                 btn.text = getString(R.string.home_btn_ai_plan)
                 btn.setIconResource(R.drawable.ic_spark)
-                btn.setOnClickListener { openReview(n.goalId, generate = true) }
+                btn.setOnClickListener { openReview(n.goalId) }
+            }
+            is NextCard.NeedProposal -> {
+                binding.textNextLabel.text = getString(R.string.home_need_proposal_label, n.lastNo)
+                binding.textNextTitle.setText(R.string.home_need_proposal_title)
+                binding.textNextCap.setText(aiCap(n.ai, R.string.home_need_proposal_cap))
+                btn.text = getString(R.string.home_btn_ai_next)
+                btn.setIconResource(R.drawable.ic_spark)
+                btn.setOnClickListener { openNext(n.goalId) }
             }
             is NextCard.Draft -> {
                 binding.textNextLabel.setText(R.string.home_draft_label)
@@ -203,7 +211,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 binding.textNextCap.setText(R.string.home_draft_roadmap_cap)
                 btn.text = getString(R.string.home_btn_check)
                 btn.icon = null
-                btn.setOnClickListener { openReview(n.goalId, generate = false) }
+                btn.setOnClickListener { openReview(n.goalId) }
             }
             NextCard.Empty -> {
                 binding.textNextLabel.setText(R.string.home_new_mountain)
@@ -298,8 +306,15 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         navigateSafe(R.id.action_home_to_goalDetail, Bundle().apply { putString(GoalDetailViewModel.ARG_GOAL_ID, goalId) })
     }
 
-    private fun openReview(goalId: String, generate: Boolean) {
-        if (generate) PlanDrafts.generateFor(goalId)
+    /** AI 요청 상태에 맞는 안내 문구 (만드는 중 · 실패 · 기본) */
+    private fun aiCap(ai: AiRequests.State?, default: Int): Int = when (ai) {
+        AiRequests.State.Running -> R.string.home_ai_working_cap
+        is AiRequests.State.Failed -> R.string.home_ai_failed_cap
+        null -> default
+    }
+
+    /** AI 로드맵 확인 화면: 초안이 없으면 그 화면에서 AI에게 요청해요 */
+    private fun openReview(goalId: String) {
         navigateSafe(R.id.action_home_to_planReview, Bundle().apply { putString("goalId", goalId) })
     }
 

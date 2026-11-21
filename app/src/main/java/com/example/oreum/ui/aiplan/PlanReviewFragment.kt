@@ -15,6 +15,7 @@ import com.example.oreum.databinding.FragmentPlanReviewBinding
 import com.example.oreum.databinding.ItemReviewTaskBinding
 import com.example.oreum.databinding.ItemRoadmapStageBinding
 import com.example.oreum.domain.usecase.RoundEngine
+import com.example.oreum.ui.common.AiStateUi
 import com.example.oreum.ui.home.HomePrefs
 import com.example.oreum.util.DateText
 import com.example.oreum.util.Season
@@ -25,7 +26,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import com.example.oreum.util.showToast
 
-/** AI 로드맵 · 1구간 계획 (시뮬레이션): 확인 · 항목 수정 · 나중에 · 승인하고 시작 → 홈 */
+/** AI 로드맵 · 1구간 계획: 만드는 중 · 실패(다시 시도) · 확인 · 항목 수정 · 나중에 · 승인하고 시작 → 홈 */
 class PlanReviewFragment : Fragment(R.layout.fragment_plan_review) {
 
     private var _binding: FragmentPlanReviewBinding? = null
@@ -63,9 +64,19 @@ class PlanReviewFragment : Fragment(R.layout.fragment_plan_review) {
     private fun render(state: PlanReviewUiState) {
         val goal = state.goal
         val draft = state.draft
-        binding.textEmpty.isVisible = goal == null || draft == null
+        val ai = state.ai.takeIf { goal != null && draft == null }
+        AiStateUi.render(
+            binding.aiState, ai,
+            loadingTitle = R.string.ai_loading_roadmap,
+            loadingBody = R.string.ai_loading_roadmap_body,
+            onRetry = viewModel::retry,
+            onLater = ::later,
+        )
+        binding.textEmpty.isVisible = ai == null && (goal == null || draft == null)
         binding.groupDraft.isVisible = goal != null && draft != null
         if (goal == null || draft == null) return
+
+        binding.textAiTag.setText(if (draft.byAi) R.string.ai_tag_real else R.string.ai_tag_simulation)
 
         val today = LocalDate.now()
         binding.textGoalTitle.text = goal.title
