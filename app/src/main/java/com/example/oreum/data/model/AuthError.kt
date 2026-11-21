@@ -12,4 +12,10 @@ enum class AuthError {
     TERMS_REQUIRED,
     WRONG_CREDENTIALS,
     EMAIL_TAKEN,
+    /** 인터넷 연결 문제 */
+    NETWORK,
+    /** 짧은 시간에 너무 많이 시도함 */
+    TOO_MANY_REQUESTS,
+    /** 그 밖의 서버 오류 */
+    UNKNOWN,
 }

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 목표 카드: 이름 · D-day / 상태 하나 / 진행률 / 단계 · 남은 학습 + (로드맵 전 · 승인 대기) 띠 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    android:background="@drawable/bg_goal_card"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/main"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:orientation="vertical"
+        android:paddingStart="14dp"
+        android:paddingTop="13dp"
+        android:paddingEnd="14dp"
+        android:paddingBottom="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/text_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/oreum_dark_text"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                tools:text="데이터베이스 기말고사" />
+
+            <TextView
+                android:id="@+id/text_dday"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_dday"
+                android:paddingHorizontal="7dp"
+                android:paddingVertical="2dp"
+                android:textColor="@color/oreum_ink2"
+                android:textSize="11.5sp"
+                android:textStyle="bold"
+                tools:text="D-2" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/text_meta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_status_chip"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="3dp"
+            android:textColor="@color/oreum_ink2"
+            android:textSize="11.5sp"
+            android:textStyle="bold"
+            tools:text="4구간 진행 중" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.google.android.material.progressindicator.LinearProgressIndicator
+                android:id="@+id/progress"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:max="100"
+                app:indicatorColor="@color/oreum_forest_mint"
+                app:trackColor="#B3FFFFFF"
+                app:trackCornerRadius="3dp"
+                app:trackStopIndicatorSize="0dp"
+                app:trackThickness="6dp"
+                tools:progress="57" />
+
+            <TextView
+                android:id="@+id/text_percent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:gravity="end"
+                android:minWidth="32dp"
+                android:textColor="@color/oreum_dark_text"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                tools:text="57%" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/text_sub"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/oreum_ink3"
+            android:textSize="11sp"
+            tools:text="남은 학습 10시간" />
+    </LinearLayout>
+
+    <!-- 계획 전: AI 계획 만들기 · 승인 대기: 계획 확인 · 승인 -->
+    <LinearLayout
+        android:id="@+id/btn_do"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:background="@drawable/bg_goal_do"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <ImageView
+            android:id="@+id/icon_do"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_spark"
+            app:tint="#2F6F64" />
+
+        <TextView
+            android:id="@+id/text_do"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:textColor="#2F6F64"
+            android:textSize="12.5sp"
+            android:textStyle="bold"
+            tools:text="@string/study_do_make" />
+    </LinearLayout>
+</LinearLayout>

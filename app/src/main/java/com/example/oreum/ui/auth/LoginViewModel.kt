@@ -2,7 +2,6 @@ package com.example.oreum.ui.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.oreum.data.local.LocalAuthRepository
 import com.example.oreum.data.model.AuthError
 import com.example.oreum.data.repository.AuthRepository
 import com.example.oreum.data.repository.AuthRepositoryProvider
@@ -40,19 +39,6 @@ class LoginViewModel(
     fun onPasswordChanged(value: String) {
         if (value == _uiState.value.password) return
         _uiState.update { it.copy(password = value, passwordError = null, formError = null) }
-    }
-
-    /** 테스트 계정 자동 입력 */
-    fun fillTestAccount() {
-        _uiState.update {
-            it.copy(
-                email = LocalAuthRepository.TEST_EMAIL,
-                password = LocalAuthRepository.TEST_PASSWORD,
-                emailError = null,
-                passwordError = null,
-                formError = null,
-            )
-        }
     }
 
     fun login() {

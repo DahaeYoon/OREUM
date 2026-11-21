@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
@@ -14,13 +13,15 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.oreum.R
+import com.example.oreum.data.repository.AuthRepositoryProvider
 import com.example.oreum.databinding.FragmentLoginBinding
 import com.example.oreum.util.Season
 import com.example.oreum.util.applySystemBarsPadding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
+import com.example.oreum.util.showToast
 
-/** 로그인: 이메일 · 비밀번호 · 비밀번호 표시 · 로그인 · 비밀번호 찾기 · 회원가입 이동 */
+/** 로그인: 이메일 · 비밀번호 · 비밀번호 표시 · 로그인 · 비밀번호 찾기 · 회원가입 이동 (이미 로그인한 기기면 바로 홈) */
 class LoginFragment : Fragment(R.layout.fragment_login) {
 
     private var _binding: FragmentLoginBinding? = null
@@ -30,6 +31,12 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentLoginBinding.bind(view)
+
+        // 이미 로그인한 기기면 (Firebase가 로그인 상태를 기억해요) 바로 홈으로
+        if (AuthRepositoryProvider.instance.currentUser.value != null) {
+            findNavController().navigate(R.id.action_login_to_home)
+            return
+        }
 
         binding.bgMountain.setImageResource(Season.of().mountainBackground)
         binding.content.applySystemBarsPadding(top = true, bottom = true)
@@ -44,7 +51,6 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             }
         }
         binding.btnLogin.setOnClickListener { viewModel.login() }
-        binding.btnTestAccount.setOnClickListener { viewModel.fillTestAccount() }
         binding.btnToSignup.setOnClickListener { findNavController().navigate(R.id.action_login_to_signup) }
         binding.btnFindPassword.setOnClickListener {
             MaterialAlertDialogBuilder(requireContext())
@@ -74,7 +80,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
 
         if (state.loggedIn) {
             viewModel.onNavigated()
-            Toast.makeText(requireContext(), R.string.toast_logged_in, Toast.LENGTH_SHORT).show()
+            requireActivity().showToast(R.string.toast_logged_in)
             findNavController().navigate(R.id.action_login_to_home)
         }
     }

@@ -17,4 +17,7 @@ fun AuthError.messageRes(): Int = when (this) {
     AuthError.TERMS_REQUIRED -> R.string.error_terms_required
     AuthError.WRONG_CREDENTIALS -> R.string.error_wrong_credentials
     AuthError.EMAIL_TAKEN -> R.string.error_email_taken
+    AuthError.NETWORK -> R.string.error_network
+    AuthError.TOO_MANY_REQUESTS -> R.string.error_too_many_requests
+    AuthError.UNKNOWN -> R.string.error_unknown
 }

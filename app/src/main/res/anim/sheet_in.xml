@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 팝업이 아래에서 올라와요 -->
+<translate xmlns:android="http://schemas.android.com/apk/res/android"
+    android:duration="260"
+    android:fromYDelta="100%p"
+    android:interpolator="@android:interpolator/decelerate_cubic"
+    android:toYDelta="0" />
