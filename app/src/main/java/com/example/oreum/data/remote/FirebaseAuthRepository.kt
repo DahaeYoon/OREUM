@@ -78,6 +78,16 @@ class FirebaseAuthRepository(
         }
     }
 
+    override suspend fun updateNickname(nickname: String): AuthError? = try {
+        val fu = auth.currentUser ?: throw IllegalStateException("no user")
+        val name = nickname.trim()
+        fu.updateProfile(profile(name)).await()
+        _currentUser.value = (_currentUser.value ?: fu.toUser()).copy(nickname = name)
+        null
+    } catch (e: Exception) {
+        e.toAuthError()
+    }
+
     override fun updateUser(user: User) {
         val fu = auth.currentUser
         if (fu != null && fu.uid == user.id && fu.displayName != user.nickname) {

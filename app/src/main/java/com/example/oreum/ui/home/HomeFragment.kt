@@ -58,15 +58,37 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private var panelFold = false
     /** 완료 버튼 때문에 자동으로 패널을 내렸는지 */
     private var autoFolded = false
-    /** 완료 처리 중 (패널이 내려가는 동안 두 번 눌러도 한 번만) */
+    /** 산 연출 중 (그동안 완료를 다시 눌러도 무시) */
     private var ticking = false
-    /** 완료 때문에 산을 확대해 두었는지 (결과 기록을 닫으면 되돌려요) */
-    private var tickFocused = false
-    /** 지금 위치가 보이도록 산을 맞춘 진행률 (바뀌면 다시 맞춰요) */
+    /** 구간 결과 제출 안내 창이 떠 있어요 (RoundLogSheet가 알려 줘요. 창이 닫힌 뒤에 산 연출) */
+    var waitSubmitDialog = false
+
+    /** 제출 안내 창이 닫혔어요: 홈에 그대로 있으면 산 연출, '추천 보기'로 넘어갔으면 홈에 돌아왔을 때 (onResume) */
+    fun onSubmitDialogClosed() {
+        waitSubmitDialog = false
+        val b = _binding ?: return
+        b.root.post {
+            if (_binding == null || !isResumed) return@post
+            if (findNavController().currentDestination?.id != R.id.homeFragment) return@post
+            replayTick()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // 다른 화면(다음 구간 추천 등)에 다녀왔으면, 미뤄 둔 산 연출을 이제 보여 줘요
+        if (pendingTick != null && !waitSubmitDialog && childFragmentManager.findFragmentByTag(RoundLogSheet.TAG) == null) {
+            binding.root.post { if (_binding != null && isResumed) replayTick() }
+        }
+    }
+
+    /** 완료했지만 학습 결과 기록을 마친 뒤에 보여 줄 산 연출 */
+    private var pendingTick: HomeViewModel.TickResult? = null
+    /** 산을 맞춘 진행률 (바뀌면 다시 맞춰요) */
     private var lastShownRate: Float? = null
     private val sheetWatcher = object : FragmentManager.FragmentLifecycleCallbacks() {
         override fun onFragmentDestroyed(fm: FragmentManager, f: Fragment) {
-            if (f is RoundLogSheet && _binding != null) restorePanel()
+            if (f is RoundLogSheet && _binding != null && !waitSubmitDialog) replayTick()
         }
     }
     private var lastState: HomeUiState? = null
@@ -79,7 +101,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val headerTop = binding.header.paddingTop
         ViewCompat.setOnApplyWindowInsetsListener(binding.header) { v, insets ->
             val top = insets.getInsets(WindowInsetsCompat.Type.systemBars()).top
-            v.setPadding(v.paddingLeft, headerTop + top + dp(38), v.paddingRight, v.paddingBottom)
+            v.setPadding(v.paddingLeft, headerTop + top + dp(6), v.paddingRight, v.paddingBottom)
             insets
         }
 
@@ -123,20 +145,19 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         // 산: 체크포인트 = 로드맵 단계
         binding.mountain.setState(
             MountainView.State(
-                progress = state.progress.rate,
+                progress = state.climb.rate,
                 slots = state.slots,
                 top = state.goal != null && state.progress.top,
                 order = TrailOrder.PLAN_DATE,
             ),
             animateFrom = viewModel.takeAnimateFrom(),
         )
-        // 지금 위치(점)가 아래 패널에 가리거나 화면 밖이면 산을 살짝 옮겨요 (완료 연출 중에는 그대로)
-        val rate = state.progress.rate
-        if (!ticking && !tickFocused && rate != lastShownRate) {
+        // 인사말 아래 ~ 패널 위에 정상부터 지금 위치까지 들어오게 산을 맞춰요 (진행률이 바뀔 때마다)
+        val rate = state.climb.rate
+        if (rate != lastShownRate) {
+            val first = lastShownRate == null
             lastShownRate = rate
-            binding.mountain.post {
-                if (_binding != null && !tickFocused) binding.mountain.ensureVisible(rate, visibleBottom(folded = panelFold))
-            }
+            binding.mountain.post { if (_binding != null) frameMountain(animate = !first) }
         }
 
         // 산 고르기 · 마감
@@ -269,28 +290,62 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             toast(getString(R.string.toast_home_tick_off, r.title.removeSuffix(" (이어서)")))
             return
         }
-        // 완료: ① 항목 시트를 닫고 패널을 내려 산을 보여 줘요 → ② 패널이 내려간 뒤 체크해서 점이 트랙을 따라 움직여요
-        //       → ③ 움직임이 끝나면 학습 결과 기록(오늘 공부한 시간 · 메모)을 열어요
+        // 완료: ① 체크는 바로 저장하지만 산의 길은 아직 채우지 않고 → ② 학습 결과 기록(오늘 공부한 시간 · 메모)을 먼저 열어요
+        //       → ③ 기록 창을 닫으면 패널을 내리고 노란 길이 채워지며 점이 다음 곳으로 올라가요 (replayTick)
         (childFragmentManager.findFragmentByTag(HomeRoundSheet.TAG) as? HomeRoundSheet)?.dismiss()
+        binding.mountain.hold(viewModel.uiState.value.climb.rate)
+        val r = viewModel.toggleItem(roundId, itemId)
+        viewModel.takeAnimateFrom() // 산 연출은 기록을 마친 뒤에
+        if (r == null) {
+            binding.mountain.release()
+            return
+        }
+        pendingTick = r
+        openLog(roundId, submit = r.roundAllDone)
+    }
+
+    /** 학습 결과 기록 창을 닫은 뒤: 패널을 내리고 → 노란 길이 채워지며 점이 올라가고 → 패널을 다시 올려요 */
+    private fun replayTick() {
+        val r = pendingTick ?: return
+        pendingTick = null
         ticking = true
+        // 홈 화면이 새로 만들어졌을 수도 있어서, 연출 시작점(완료 전 진행률)을 다시 잡아 둬요
+        binding.mountain.hold(r.before)
         val wasFolded = panelFold
         if (!wasFolded) {
             autoFolded = true
             setPanelFold(true)
         }
-        // 지금 위치를 확대해서 패널 위 보이는 곳 가운데로 (점이 산 아래쪽에 있어도 보여요)
-        tickFocused = true
-        binding.mountain.focusOn(viewModel.uiState.value.progress.rate, visibleBottom(folded = true))
         binding.root.postDelayed({
-            ticking = false
-            if (_binding == null || !isAdded) return@postDelayed
-            val r = viewModel.toggleItem(roundId, itemId) ?: return@postDelayed run { restorePanel() }
-            toast(getString(R.string.toast_home_done_move, r.title.removeSuffix(" (이어서)"), (r.before * 100).toInt(), (r.after * 100).toInt()))
+            if (_binding == null || !isAdded) {
+                ticking = false
+                return@postDelayed
+            }
+            binding.mountain.release()
+            val moved = r.after > r.before
+            if (moved) toast(getString(R.string.toast_home_done_move, r.title.removeSuffix(" (이어서)"), r.doneCount, r.total))
             binding.root.postDelayed({
-                if (_binding == null || !isAdded) return@postDelayed
-                openLog(roundId, submit = r.roundAllDone)
-            }, if (r.after > r.before) TRACK_MOVE_MS else 600L)
-        }, PANEL_MOVE_MS)
+                ticking = false
+                if (_binding != null && isAdded) restorePanel()
+            }, if (moved) TRACK_MOVE_MS else 300L)
+        }, if (wasFolded) 0L else PANEL_MOVE_MS)
+    }
+
+    /** 완료 때문에 자동으로 내린 패널이면 다시 올려요 */
+    private fun restorePanel() {
+        if (autoFolded && panelFold) setPanelFold(false)
+        autoFolded = false
+    }
+
+    /** 보이는 곳(인사말 아래 ~ 패널 위)에 정상부터 지금 위치까지 들어오게 산을 맞춰요 */
+    private fun frameMountain(animate: Boolean = true) {
+        val greet = binding.textGreeting
+        val a = IntArray(2)
+        val b = IntArray(2)
+        greet.getLocationInWindow(a)
+        binding.mountain.getLocationInWindow(b)
+        val top = (a[1] - b[1] + greet.height + dp(8)).toFloat()
+        binding.mountain.frame(viewModel.uiState.value.climb.rate, top, visibleBottom(folded = panelFold), animate)
     }
 
     /** 아래 패널에 가리지 않는 산 영역의 아래 끝 (산 뷰 기준 px). folded = 패널을 내렸을 때 */
@@ -304,18 +359,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         return openTop + if (folded) (binding.panel.height - dp(74)).toFloat() else 0f
     }
 
-    /** 완료 때문에 자동으로 내린 패널이면 다시 올려요 (결과 기록을 닫은 뒤) */
-    private fun restorePanel() {
-        if (autoFolded && panelFold) setPanelFold(false)
-        if (tickFocused) {
-            // 원래 크기로 돌아가되, 지금 위치가 패널에 가리지 않게
-            val rate = viewModel.uiState.value.progress.rate
-            lastShownRate = rate
-            binding.mountain.ensureVisible(rate, visibleBottom(folded = panelFold), force = true)
-        }
-        tickFocused = false
-        autoFolded = false
-    }
 
     private fun openFlag() {
         val goal = lastState?.goal
@@ -328,6 +371,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun openCheckpoint(index: Int) {
         val slot = lastState?.slots?.getOrNull(index) ?: return
+        // 산 위 점 = 이번 구간 항목 → 항목 모두 보기
+        if (slot.id.startsWith("it:")) {
+            val roundId = slot.id.split(":").getOrNull(1) ?: return
+            HomeRoundSheet.newInstance(roundId).show(childFragmentManager, HomeRoundSheet.TAG)
+            return
+        }
         SlotInfoSheet.newInstance(slot.id).show(childFragmentManager, SlotInfoSheet.TAG)
     }
 
@@ -381,8 +430,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     fun selectGoal(goalId: String?) {
-        binding.mountain.resetView()
-        lastShownRate = null
         viewModel.selectGoal(goalId)
     }
 
@@ -404,6 +451,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             it.animate().alpha(if (fold) 0f else 1f).setDuration(250).start()
         }
         binding.cardNext.isEnabled = !fold
+        // 보이는 곳이 넓어지거나 좁아졌으니 산을 다시 맞춰요 (내리면 빈 곳 없이 크게, 올리면 다시 패널 위로)
+        frameMountain()
     }
 
     private fun animateY(v: View, target: Float) {
@@ -450,9 +499,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private companion object {
-        /** 패널이 내려가는 시간 · 점이 트랙을 따라 움직이는 시간 (MountainView.ANIM_SEC 1.5초 + 여유) */
+        /** 패널이 내려가는 시간 · 점이 트랙을 따라 움직이는 시간 (점 이동 1.5초 + 오른 만큼(+n%) 표시) */
         const val PANEL_MOVE_MS = 500L
-        const val TRACK_MOVE_MS = 1_800L
+        const val TRACK_MOVE_MS = 2_300L
         val DATE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("M월 d일 EEEE", Locale.KOREAN)
     }
 }

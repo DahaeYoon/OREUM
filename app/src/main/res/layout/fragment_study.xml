@@ -105,6 +105,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="2dp"
+                    android:layout_marginTop="14dp"
                     android:layout_marginBottom="8dp"
                     android:drawablePadding="6dp"
                     android:gravity="center_vertical"
@@ -122,12 +123,14 @@
                     android:id="@+id/goal_list"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
                     android:orientation="vertical" />
 
                 <LinearLayout
                     android:id="@+id/group_empty"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
                     android:background="@drawable/bg_empty_card"
                     android:gravity="center_horizontal"
                     android:orientation="vertical"

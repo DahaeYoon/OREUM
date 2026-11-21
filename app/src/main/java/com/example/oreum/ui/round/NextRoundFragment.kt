@@ -64,6 +64,8 @@ class NextRoundFragment : Fragment(R.layout.fragment_next_round) {
     private var foldOpen = false
     private var goal: Goal? = null
     private var proposal: NextProposal? = null
+    /** 승인하고 홈으로 가는 중 (화면을 다시 그리지 않아요) */
+    private var leaving = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -128,6 +130,8 @@ class NextRoundFragment : Fragment(R.layout.fragment_next_round) {
     }
 
     private fun render(g: Goal?, p: NextProposal?, ai: AiRequests.State?) {
+        // 승인하고 홈으로 가는 중: 추천이 사라져도 '추천이 없어요' 화면을 그리지 않아요
+        if (leaving) return
         goal = g
         proposal = p
         val round = p?.round
@@ -255,9 +259,12 @@ class NextRoundFragment : Fragment(R.layout.fragment_next_round) {
         val round = p.round
         if (p.final || round == null) {
             // 정상 도착: 확인 없이 바로 (프로토타입과 같음)
+            leaving = true
             if (repository.approveProposal(g.id, today()) == ApproveResult.ReachedTop) {
                 HomePrefs.summitGoalId = g.id
                 goHome(g.id, null)
+            } else {
+                leaving = false
             }
             return
         }
@@ -266,7 +273,12 @@ class NextRoundFragment : Fragment(R.layout.fragment_next_round) {
             .setMessage(getString(R.string.next_approve_body, round.items.size, DateText.minutes(round.estimatedMinutes)))
             .setNegativeButton(R.string.study_form_cancel, null)
             .setPositiveButton(R.string.next_approve) { _, _ ->
-                val res = repository.approveProposal(g.id, today()) as? ApproveResult.NextReady ?: return@setPositiveButton
+                leaving = true
+                val res = repository.approveProposal(g.id, today()) as? ApproveResult.NextReady
+                if (res == null) {
+                    leaving = false
+                    return@setPositiveButton
+                }
                 goHome(g.id, getString(R.string.toast_next_approved, res.round.no))
             }
             .show()

@@ -32,6 +32,8 @@ class PlanReviewFragment : Fragment(R.layout.fragment_plan_review) {
     private var _binding: FragmentPlanReviewBinding? = null
     private val binding get() = checkNotNull(_binding)
     private val viewModel: PlanReviewViewModel by viewModels()
+    /** 승인하고 홈으로 가는 중 (화면을 다시 그리지 않아요) */
+    private var leaving = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -62,6 +64,8 @@ class PlanReviewFragment : Fragment(R.layout.fragment_plan_review) {
     }
 
     private fun render(state: PlanReviewUiState) {
+        // 승인하고 홈으로 가는 중: 초안이 사라져도 '계획이 없어요' 화면을 그리지 않아요
+        if (leaving) return
         val goal = state.goal
         val draft = state.draft
         val ai = state.ai.takeIf { goal != null && draft == null }
@@ -147,7 +151,11 @@ class PlanReviewFragment : Fragment(R.layout.fragment_plan_review) {
             )
             .setNegativeButton(R.string.study_form_cancel, null)
             .setPositiveButton(R.string.round_review_approve) { _, _ ->
-                viewModel.approve() ?: return@setPositiveButton
+                leaving = true
+                if (viewModel.approve() == null) {
+                    leaving = false
+                    return@setPositiveButton
+                }
                 toast(getString(R.string.toast_round_approved))
                 // 승인한 목표의 산이 보이는 홈으로 이동
                 HomePrefs.goalId = viewModel.goalId
