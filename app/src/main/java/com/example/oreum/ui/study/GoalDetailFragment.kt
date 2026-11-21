@@ -26,6 +26,7 @@ import com.example.oreum.ui.round.NextRoundFragment
 import com.example.oreum.ui.round.RoundDetailSheet
 import com.example.oreum.ui.round.RoundLogSheet
 import com.example.oreum.util.DateText
+import com.example.oreum.util.navigateSafe
 import com.example.oreum.util.Season
 import com.example.oreum.util.applySystemBarsPadding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -49,7 +50,7 @@ class GoalDetailFragment : Fragment(R.layout.fragment_goal_detail) {
 
         binding.btnBack.setOnClickListener { findNavController().navigateUp() }
         binding.btnEdit.setOnClickListener {
-            findNavController().navigate(
+            navigateSafe(
                 R.id.action_goalDetail_to_goalForm,
                 Bundle().apply { putString(GoalFormViewModel.ARG_GOAL_ID, viewModel.goalId) },
             )
@@ -298,7 +299,7 @@ class GoalDetailFragment : Fragment(R.layout.fragment_goal_detail) {
 
     private fun openReview(generate: Boolean) {
         if (generate) PlanDrafts.generateFor(viewModel.goalId)
-        findNavController().navigate(
+        navigateSafe(
             R.id.action_goalDetail_to_planReview,
             Bundle().apply { putString(GoalFormViewModel.ARG_GOAL_ID, viewModel.goalId) },
         )
