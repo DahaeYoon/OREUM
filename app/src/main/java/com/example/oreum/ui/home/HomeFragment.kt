@@ -31,6 +31,7 @@ import com.example.oreum.ui.round.NextRoundFragment
 import com.example.oreum.ui.round.RoundLogSheet
 import com.example.oreum.ui.study.GoalDetailViewModel
 import com.example.oreum.util.DateText
+import com.example.oreum.util.navigateSafe
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
@@ -210,7 +211,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 binding.textNextCap.setText(R.string.home_no_goal_cap)
                 btn.text = getString(R.string.home_btn_add_goal)
                 btn.setIconResource(R.drawable.ic_add)
-                btn.setOnClickListener { findNavController().navigate(R.id.action_home_to_goalForm) }
+                btn.setOnClickListener { navigateSafe(R.id.action_home_to_goalForm) }
             }
             NextCard.Top -> {
                 binding.textNextLabel.setText(R.string.home_top_label)
@@ -218,7 +219,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 binding.textNextCap.setText(R.string.home_top_cap)
                 btn.text = getString(R.string.home_btn_new_mountain)
                 btn.setIconResource(R.drawable.ic_route)
-                btn.setOnClickListener { findNavController().navigate(R.id.action_home_to_goalForm) }
+                btn.setOnClickListener { navigateSafe(R.id.action_home_to_goalForm) }
             }
         }
     }
@@ -272,9 +273,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     /** 새로운 산 등반하기: 목표 만들기 */
     fun openNewGoal() {
-        val nav = findNavController()
-        if (nav.currentDestination?.id != R.id.homeFragment) return
-        nav.navigate(R.id.action_home_to_goalForm)
+        navigateSafe(R.id.action_home_to_goalForm)
     }
 
     /** 학습 결과 기록 (submit = true: 못 끝낸 이유까지 바로 보여요) */
@@ -296,14 +295,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     fun openDetail(goalId: String) {
-        val nav = findNavController()
-        if (nav.currentDestination?.id != R.id.homeFragment) return
-        nav.navigate(R.id.action_home_to_goalDetail, Bundle().apply { putString(GoalDetailViewModel.ARG_GOAL_ID, goalId) })
+        navigateSafe(R.id.action_home_to_goalDetail, Bundle().apply { putString(GoalDetailViewModel.ARG_GOAL_ID, goalId) })
     }
 
     private fun openReview(goalId: String, generate: Boolean) {
         if (generate) PlanDrafts.generateFor(goalId)
-        findNavController().navigate(R.id.action_home_to_planReview, Bundle().apply { putString("goalId", goalId) })
+        navigateSafe(R.id.action_home_to_planReview, Bundle().apply { putString("goalId", goalId) })
     }
 
     fun selectGoal(goalId: String?) {

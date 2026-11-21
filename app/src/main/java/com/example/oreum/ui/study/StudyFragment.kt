@@ -20,6 +20,7 @@ import com.example.oreum.databinding.FragmentStudyBinding
 import com.example.oreum.databinding.ItemGoalCardBinding
 import com.example.oreum.ui.aiplan.PlanDrafts
 import com.example.oreum.util.DateText
+import com.example.oreum.util.navigateSafe
 import com.example.oreum.util.Season
 import com.example.oreum.util.applySystemBarsPadding
 import com.example.oreum.util.onChildClick
@@ -133,7 +134,7 @@ class StudyFragment : Fragment(R.layout.fragment_study) {
 
     /** 목표 상세 화면 */
     private fun openDetail(goalId: String) {
-        findNavController().navigate(
+        navigateSafe(
             R.id.action_study_to_goalDetail,
             Bundle().apply { putString(GoalDetailViewModel.ARG_GOAL_ID, goalId) },
         )
@@ -141,7 +142,7 @@ class StudyFragment : Fragment(R.layout.fragment_study) {
 
     /** 목표 만들기(goalId = null) · 수정 팝업 */
     fun openForm(goalId: String?) {
-        findNavController().navigate(
+        navigateSafe(
             R.id.action_study_to_goalForm,
             Bundle().apply { putString(GoalFormViewModel.ARG_GOAL_ID, goalId) },
         )
@@ -154,7 +155,7 @@ class StudyFragment : Fragment(R.layout.fragment_study) {
     fun openPlanReview(goalId: String) {
         val repository = StudyRepositoryProvider.instance
         if (repository.roadmapDrafts.value[goalId] == null) PlanDrafts.generateFor(goalId, repository)
-        findNavController().navigate(
+        navigateSafe(
             R.id.action_study_to_planReview,
             Bundle().apply { putString(GoalFormViewModel.ARG_GOAL_ID, goalId) },
         )
