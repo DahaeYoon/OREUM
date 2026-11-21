@@ -35,8 +35,10 @@ sealed interface AiResult<out T> {
 enum class AiFailure {
     /** 인터넷 연결 · 시간 초과 */
     NETWORK,
-    /** 요청이 많아 잠시 막힘 (무료 사용량 한도) */
+    /** 짧은 시간에 요청이 많아 잠시 막힘 (분당 사용량 한도) → 1분쯤 기다리면 풀려요 */
     BUSY,
+    /** 오늘 쓸 수 있는 사용량을 다 씀 (하루 한도) → 매일 오후 5시(한국 시간)에 다시 채워져요 */
+    DAILY_LIMIT,
     /** 앱 인증(App Check) · AI 설정 문제 */
     SETUP,
     /** AI 답이 형식에 맞지 않음 */

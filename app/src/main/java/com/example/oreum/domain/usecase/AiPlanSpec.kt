@@ -59,7 +59,8 @@ object AiPlanSpec {
             appendLine("[요청]")
             appendLine("1) 로드맵: 단계 3~6개. 단계마다 title(15자 이내), topics(주제 2~4개, 각 20자 이내), minutes(예상 학습 시간, 분, 30분 단위).")
             appendLine("   전체 minutes 합은 쓸 수 있는 시간(${(total * 60).roundToInt()}분)의 85%를 넘지 않게 하고, 마지막 단계는 총정리 · 기출 · 최종 점검으로.")
-            appendLine("2) 1구간: 1단계의 첫 주제부터. 항목(items) 3~6개, 항목마다 title과 minutes(5분 단위).")
+            appendLine("2) 1구간: 1단계의 첫 주제부터. 항목(items) 4~8개, 항목마다 title과 minutes(5분 단위).")
+            appendLine("   항목 하나는 10~40분짜리 구체적인 할 일로 잘게 나눠. title에는 무엇을 얼마나 할지 적어 (예: \"1~3정규형 개념 정리 · 예제 3개\", \"기출 10문제 풀고 오답 표시\"). \"개념 공부\"처럼 뭉뚱그린 항목은 쓰지 마.")
             appendLine("   항목 minutes 합은 약 ${target}분(±20%). topic(구간 주제 한 줄), topics(이번에 다루는 로드맵 주제, 1단계 topics 중에서).")
             appendLine("   method(학습 방법 2개), criteria(완료 기준 2~3개, 확인 가능한 문장).")
         }
@@ -178,7 +179,8 @@ object AiPlanSpec {
             appendLine()
             appendLine("[요청] ${last.no + 1}구간 계획을 만들어 줘.")
             appendLine("- stage(단계 index), topic(구간 주제 한 줄), topics(이번에 새로 다루는 로드맵 주제, 없으면 빈 목록)")
-            appendLine("- items 3~7개: title, minutes(5분 단위), kind(NEW=새 주제, CARRY=못 끝낸 것 이어서, REVIEW=복습)")
+            appendLine("- items 4~8개: title, minutes(5분 단위), kind(NEW=새 주제, CARRY=못 끝낸 것 이어서, REVIEW=복습)")
+            appendLine("- 항목 하나는 10~40분짜리 구체적인 할 일로 잘게 나눠 (긴 CARRY도 나눠도 돼). title에는 무엇을 얼마나 할지 적어 (예: \"BCNF 예제 3개 풀기\", \"1구간 오답 5개 다시 풀기\"). 뭉뚱그린 항목은 쓰지 마.")
             appendLine("- method(학습 방법 2개), criteria(완료 기준 2~3개)")
             appendLine("- why: 이렇게 추천한 이유 2~3개 (지난 결과 숫자 · 메모 · 이유를 근거로)")
             appendLine("- fixes: 지난 구간과 비교해 바꾼 점 1~3개, 15자 이내 짧은 말 (예: \"분량 80%로 줄임\", \"못 끝낸 2개 이어서\", \"2단계 시작\")")
@@ -228,13 +230,13 @@ object AiPlanSpec {
         return (g.stage until g.roadmap.size).flatMap { g.roadmap[it].topics }.filter { it !in covered }.take(4)
     }
 
-    /** 항목 검사: 이름 · 시간(5분 단위, 10~240분) · 종류, 합계가 권장의 1.6배를 넘으면 비율대로 줄여요 */
+    /** 항목 검사: 이름 · 시간(5분 단위, 10~60분) · 종류, 합계가 권장의 1.6배를 넘으면 비율대로 줄여요 */
     private fun parseItems(m: Map<String, Any?>, target: Int, allowKinds: Boolean): List<RoundItem> {
         var list = m.maps("items").mapNotNull { i ->
-            val title = i.str("title").trim().take(40)
+            val title = i.str("title").trim().take(50)
             if (title.isBlank()) return@mapNotNull null
             val kind = if (allowKinds) ItemKind.entries.firstOrNull { it.name == i.str("kind").uppercase() } ?: ItemKind.NEW else ItemKind.NEW
-            RoundItem(id = RoundEngine.newId("ri"), title = title, minutes = round5(i.dbl("minutes").coerceIn(10.0, 240.0)), kind = kind)
+            RoundItem(id = RoundEngine.newId("ri"), title = title, minutes = round5(i.dbl("minutes").coerceIn(10.0, 60.0)), kind = kind)
         }.take(10)
         if (list.isEmpty()) throw BadResponse("구간 항목이 없어요")
         val sum = list.sumOf { it.minutes }

@@ -25,7 +25,8 @@ object AiRequests {
 
     sealed interface State {
         data object Running : State
-        data class Failed(val reason: AiFailure) : State
+        /** at = 실패한 시각 (분당 한도면 이때부터 잠시 기다려요) */
+        data class Failed(val reason: AiFailure, val at: Long = System.currentTimeMillis()) : State
     }
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
