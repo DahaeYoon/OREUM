@@ -50,7 +50,8 @@ object FirestoreMapper {
         "topic" to r.topic, "topics" to r.topics, "method" to r.method, "criteria" to r.criteria,
         "items" to r.items.map(::item), "status" to r.status.name, "createdOn" to r.createdOn,
         "approvedOn" to r.approvedOn, "startedOn" to r.startedOn, "doneOn" to r.doneOn, "dates" to r.dates,
-        "result" to r.result?.let(::result),
+        "result" to r.result?.let(::result), "byAi" to r.byAi, "aiFixes" to r.aiFixes,
+        "aiPlannedCount" to r.aiPlannedCount, "aiPlannedMinutes" to r.aiPlannedMinutes,
     )
 
     fun session(s: StudySession): Map<String, Any?> = mapOf(
@@ -60,6 +61,7 @@ object FirestoreMapper {
 
     fun draft(d: RoadmapDraft): Map<String, Any?> = mapOf(
         "goalId" to d.goalId, "roadmap" to d.roadmap.map(::stage), "round" to round(d.round), "createdOn" to d.createdOn,
+        "byAi" to d.byAi,
     )
 
     fun proposal(p: NextProposal): Map<String, Any?> = mapOf(
@@ -68,6 +70,7 @@ object FirestoreMapper {
         "lastReasons" to p.lastReasons.map { it.name }, "lastMemo" to p.lastMemo,
         "lastEstimatedMinutes" to p.lastEstimatedMinutes, "lastActualMinutes" to p.lastActualMinutes,
         "lastDoneCount" to p.lastDoneCount, "lastTotal" to p.lastTotal, "createdOn" to p.createdOn,
+        "byAi" to p.byAi,
     )
 
     // ---------------- 불러오기 (Map → 객체) ----------------
@@ -98,7 +101,8 @@ object FirestoreMapper {
         topic = m.str("topic"), topics = m.strs("topics"), method = m.strs("method"), criteria = m.strs("criteria"),
         items = m.maps("items").map(::toItem), status = m.enum("status", RoundStatus.READY), createdOn = m.long("createdOn"),
         approvedOn = m.longOrNull("approvedOn"), startedOn = m.longOrNull("startedOn"), doneOn = m.longOrNull("doneOn"),
-        dates = m.longs("dates"), result = m.map("result")?.let(::toResult),
+        dates = m.longs("dates"), result = m.map("result")?.let(::toResult), byAi = m.bool("byAi"),
+        aiFixes = m.strs("aiFixes"), aiPlannedCount = m.int("aiPlannedCount"), aiPlannedMinutes = m.int("aiPlannedMinutes"),
     )
 
     fun toSession(m: Map<String, Any?>) = StudySession(
@@ -109,6 +113,7 @@ object FirestoreMapper {
     fun toDraft(m: Map<String, Any?>) = RoadmapDraft(
         goalId = m.str("goalId"), roadmap = m.maps("roadmap").map(::toStage),
         round = m.map("round")?.let(::toRound) ?: StudyRound(), createdOn = m.long("createdOn"),
+        byAi = m.bool("byAi"),
     )
 
     fun toProposal(m: Map<String, Any?>) = NextProposal(
@@ -118,7 +123,7 @@ object FirestoreMapper {
         lastReasons = m.strs("lastReasons").mapNotNull { n -> MissReason.entries.firstOrNull { it.name == n } },
         lastMemo = m.str("lastMemo"), lastEstimatedMinutes = m.int("lastEstimatedMinutes"),
         lastActualMinutes = m.int("lastActualMinutes"), lastDoneCount = m.int("lastDoneCount"),
-        lastTotal = m.int("lastTotal"), createdOn = m.long("createdOn"),
+        lastTotal = m.int("lastTotal"), createdOn = m.long("createdOn"), byAi = m.bool("byAi"),
     )
 
     // ---------------- 읽기 도우미 (Firestore 숫자는 Long · Double로 와요) ----------------

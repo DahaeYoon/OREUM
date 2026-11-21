@@ -19,6 +19,8 @@ import com.example.oreum.data.model.MissReason
 import com.example.oreum.data.model.RoundResult
 import com.example.oreum.data.model.RoundStatus
 import com.example.oreum.data.model.StudyRound
+import com.example.oreum.data.repository.AiRequests
+import com.example.oreum.ui.home.HomeFragment
 import com.example.oreum.data.repository.RoundLogEntry
 import com.example.oreum.data.repository.StudyRepository
 import com.example.oreum.data.repository.StudyRepositoryProvider
@@ -195,18 +197,25 @@ class RoundLogSheet : GlassSheetFragment() {
             scrollTo(if (missing.isNotEmpty()) binding.rowList.getChildAt(round.items.indexOf(missing.first())) else binding.rowDiffLabel)
             return
         }
-        val proposal = repository.submitRound(round.id, entries(), RoundResult(difficulty, memo()), today())
+        repository.submitRound(round.id, entries(), RoundResult(difficulty, memo()), today()) ?: return
         val context = requireActivity()
         val nav = runCatching { findNavController() }.getOrNull()
         val goalId = round.goalId
         val no = round.no
+        // 바로 AI에게 다음 구간 추천을 요청해요 (화면을 닫아도 이어져요). 로드맵을 다 마쳤으면 AI 없이 '정상 도착' 안내만 저장돼요
+        AiRequests.requestNext(goalId)
+        val final = repository.proposals.value[goalId]?.final == true
+        // 홈에서 열었으면: 제출 안내 창까지 닫힌 뒤에 산 연출을 보여 달라고 알려요
+        val home = parentFragment as? HomeFragment
+        home?.waitSubmitDialog = true
         dismiss()
 
         MaterialAlertDialogBuilder(context)
             .setTitle(context.getString(R.string.round_submitted_title, no))
-            .setMessage(if (proposal?.final == true) R.string.round_submitted_final else R.string.round_submitted_body)
+            .setMessage(if (final) R.string.round_submitted_final else R.string.round_submitted_body)
             .setNegativeButton(R.string.round_submitted_later, null)
             .setPositiveButton(R.string.round_submitted_ok) { _, _ -> if (nav != null) NextRoundFragment.open(nav, goalId) }
+            .setOnDismissListener { home?.onSubmitDialogClosed() }
             .show()
     }
 

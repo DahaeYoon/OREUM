@@ -149,12 +149,10 @@ class LocalStudyRepository(
         _rounds.update { list -> if (list.any { it.id == r.id }) list.map { if (it.id == r.id) r else it } else list + r }
     }
 
-    override fun generateRoadmap(goalId: String, today: Long): RoadmapDraft? {
-        val g = goal(goalId) ?: return null
-        val draft = RoundEngine.genDraft(g, today)
-        _roadmapDrafts.update { it + (goalId to draft) }
+    override fun saveRoadmapDraft(draft: RoadmapDraft) {
+        val g = goal(draft.goalId) ?: return
+        _roadmapDrafts.update { it + (draft.goalId to draft) }
         if (g.planStatus != PlanStatus.APPROVED) updateGoal(g.copy(planStatus = PlanStatus.DRAFT))
-        return draft
     }
 
     override fun updateRoadmapDraft(draft: RoadmapDraft) {
@@ -232,13 +230,15 @@ class LocalStudyRepository(
         if (draft != null) putRound(r.copy(result = draft))
     }
 
-    override fun submitRound(roundId: String, entries: List<RoundLogEntry>, result: RoundResult, today: Long): NextProposal? {
+    override fun submitRound(roundId: String, entries: List<RoundLogEntry>, result: RoundResult, today: Long): StudyRound? {
         val r = applyLog(roundId, entries, today) ?: return null
-        putRound(r.copy(status = RoundStatus.DONE, doneOn = today, result = result))
-        val g = goal(r.goalId) ?: return null
-        val p = RoundEngine.proposeNext(g, _rounds.value, today) ?: return null
-        _proposals.update { it + (g.id to p) }
-        return p
+        val done = r.copy(status = RoundStatus.DONE, doneOn = today, result = result)
+        putRound(done)
+        return done
+    }
+
+    override fun saveProposal(proposal: NextProposal) {
+        _proposals.update { it + (proposal.goalId to proposal) }
     }
 
     override fun approveProposal(goalId: String, today: Long): ApproveResult? {

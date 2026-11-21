@@ -56,8 +56,8 @@ interface StudyRepository {
 
     fun round(id: String): StudyRound?
 
-    /** AI 로드맵 + 1구간 초안 만들기 (목표는 '승인 대기'가 돼요) */
-    fun generateRoadmap(goalId: String, today: Long): RoadmapDraft?
+    /** AI가 만든 로드맵 + 1구간 초안 저장 (목표는 '승인 대기'가 돼요) */
+    fun saveRoadmapDraft(draft: RoadmapDraft)
 
     /** 검토 화면에서 고친 1구간 항목 저장 */
     fun updateRoadmapDraft(draft: RoadmapDraft)
@@ -77,8 +77,11 @@ interface StudyRepository {
     /** 오늘 기록 저장: 항목별 완료 · 오늘 공부한 시간 · 못 한 이유 (구간은 그대로 이어져요). draft = 고른 난이도 · 메모 (제출 전 임시) */
     fun saveRoundLog(roundId: String, entries: List<RoundLogEntry>, draft: RoundResult?, today: Long)
 
-    /** 구간 결과 제출: 기록을 저장하고 구간을 마친 뒤, AI 다음 구간 추천을 만들어 돌려줘요 */
-    fun submitRound(roundId: String, entries: List<RoundLogEntry>, result: RoundResult, today: Long): NextProposal?
+    /** 구간 결과 제출: 기록을 저장하고 구간을 마쳐요. 다음 구간 추천은 AI가 따로 만들어 saveProposal로 저장해요 */
+    fun submitRound(roundId: String, entries: List<RoundLogEntry>, result: RoundResult, today: Long): StudyRound?
+
+    /** AI 다음 구간 추천 (또는 로드맵 완료 안내) 저장 · 승인 전 */
+    fun saveProposal(proposal: NextProposal)
 
     /** 다음 구간 추천 승인: 다음 구간이 '시작 전'으로 확정되거나, 마지막이면 정상 도착 */
     fun approveProposal(goalId: String, today: Long): ApproveResult?

@@ -124,7 +124,7 @@
                     android:orientation="vertical">
 
                     <LinearLayout
-                        android:id="@+id/row_reset"
+                        android:id="@+id/row_nickname"
                         android:layout_width="match_parent"
                         android:layout_height="52dp"
                         android:background="?attr/selectableItemBackground"
@@ -136,7 +136,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="@string/mypage_reset"
+                            android:text="@string/mypage_nickname"
                             android:textColor="@color/oreum_dark_text"
                             android:textSize="15sp" />
 
@@ -156,23 +156,6 @@
                         android:background="#14285041" />
 
                     <TextView
-                        android:id="@+id/row_clear"
-                        android:layout_width="match_parent"
-                        android:layout_height="52dp"
-                        android:background="?attr/selectableItemBackground"
-                        android:gravity="center_vertical"
-                        android:paddingHorizontal="16dp"
-                        android:text="@string/mypage_clear"
-                        android:textColor="@color/oreum_dark_text"
-                        android:textSize="15sp" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginHorizontal="16dp"
-                        android:background="#14285041" />
-
-                    <TextView
                         android:id="@+id/row_logout"
                         android:layout_width="match_parent"
                         android:layout_height="52dp"
@@ -183,6 +166,84 @@
                         android:textColor="@color/oreum_coral_ink"
                         android:textSize="15sp"
                         android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- 앱 정보 -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginTop="20dp"
+                    android:text="@string/mypage_app"
+                    android:textColor="@color/oreum_ink2"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_records_card"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/row_version"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="16dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/mypage_version"
+                            android:textColor="@color/oreum_dark_text"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:id="@+id/text_version"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="6dp"
+                            android:textColor="@color/oreum_ink3"
+                            android:textSize="14sp" />
+
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginHorizontal="16dp"
+                        android:background="#14285041" />
+
+                    <LinearLayout
+                        android:id="@+id/row_about"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:background="?attr/selectableItemBackground"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="16dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/mypage_about"
+                            android:textColor="@color/oreum_dark_text"
+                            android:textSize="15sp" />
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:importantForAccessibility="no"
+                            android:rotation="-90"
+                            android:src="@drawable/ic_expand_more"
+                            android:tint="@color/oreum_ink3" />
+                    </LinearLayout>
                 </LinearLayout>
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>

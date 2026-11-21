@@ -64,6 +64,30 @@ class FirebaseAuthRepository(
         AuthResult.Failure(e.toAuthError())
     }
 
+    override suspend fun sendPasswordReset(email: String): AuthError? = try {
+        // 메일을 한국어로 보내요. 가입하지 않은 이메일이어도 (보안상) 오류 없이 끝날 수 있어요
+        auth.setLanguageCode("ko")
+        auth.sendPasswordResetEmail(email.trim()).await()
+        null
+    } catch (e: Exception) {
+        when (e) {
+            // 가입하지 않은 이메일도 '보냈어요'와 같은 문구로 안내해요 (가입 여부를 알려 주지 않도록)
+            is FirebaseAuthInvalidUserException -> null
+            is FirebaseAuthInvalidCredentialsException -> AuthError.EMAIL_FORMAT
+            else -> e.toAuthError()
+        }
+    }
+
+    override suspend fun updateNickname(nickname: String): AuthError? = try {
+        val fu = auth.currentUser ?: throw IllegalStateException("no user")
+        val name = nickname.trim()
+        fu.updateProfile(profile(name)).await()
+        _currentUser.value = (_currentUser.value ?: fu.toUser()).copy(nickname = name)
+        null
+    } catch (e: Exception) {
+        e.toAuthError()
+    }
+
     override fun updateUser(user: User) {
         val fu = auth.currentUser
         if (fu != null && fu.uid == user.id && fu.displayName != user.nickname) {
