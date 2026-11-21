@@ -59,6 +59,10 @@ class LoginViewModel(
         }
     }
 
+    /** 비밀번호 찾기: 이메일 형식을 먼저 확인하고 재설정 링크를 보내요. 성공하면 null */
+    suspend fun sendPasswordReset(email: String): AuthError? =
+        AuthValidator.email(email) ?: authRepository.sendPasswordReset(email)
+
     fun onNavigated() {
         _uiState.update { it.copy(loggedIn = false) }
     }

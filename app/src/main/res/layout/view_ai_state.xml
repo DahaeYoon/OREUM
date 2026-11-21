@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AI 요청 상태: 만드는 중(원형 진행) · 실패(이유 + 다시 시도 / 나중에). 시뮬레이션으로 대신 만들지 않아요 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="12dp"
+    android:background="@drawable/bg_glass_card"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingHorizontal="20dp"
+    android:paddingTop="28dp"
+    android:paddingBottom="20dp"
+    android:visibility="gone"
+    tools:visibility="visible">
+
+    <ProgressBar
+        android:id="@+id/progress"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/oreum_forest_deep" />
+
+    <ImageView
+        android:id="@+id/icon_fail"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:importantForAccessibility="no"
+        android:src="@drawable/ic_spark"
+        android:visibility="gone"
+        android:tint="@color/oreum_ink3" />
+
+    <TextView
+        android:id="@+id/text_ai_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:gravity="center"
+        android:textColor="@color/oreum_dark_text"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        tools:text="AI가 로드맵을 만드는 중…" />
+
+    <TextView
+        android:id="@+id/text_ai_body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:gravity="center"
+        android:lineSpacingMultiplier="1.25"
+        android:textColor="@color/oreum_ink2"
+        android:textSize="13sp"
+        tools:text="목표 · 기간 · 공부 가능 시간을 보고 계획을 짜고 있어요. 30초쯤 걸릴 수 있어요." />
+
+    <LinearLayout
+        android:id="@+id/row_ai_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_ai_later"
+            style="@style/Widget.OREUM.Button.Outline"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/ai_later" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_ai_retry"
+            style="@style/Widget.OREUM.Button.Primary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1.4"
+            android:text="@string/ai_retry" />
+    </LinearLayout>
+</LinearLayout>

@@ -7,6 +7,7 @@ import com.example.oreum.data.model.Goal
 import com.example.oreum.data.model.NextProposal
 import com.example.oreum.data.model.RoundStatus
 import com.example.oreum.data.model.StudyRound
+import com.example.oreum.data.repository.AiRequests
 import com.example.oreum.data.repository.StudyRepository
 import com.example.oreum.data.repository.StudyRepositoryProvider
 import com.example.oreum.domain.usecase.RoadmapProgress
@@ -31,6 +32,11 @@ data class GoalDetailUiState(
     val history: List<StudyRound> = emptyList(),
     val feasibility: RoadmapProgress.Feasibility? = null,
     val foldOpen: Boolean = false,
+    /** 구간 결과를 제출했는데 다음 구간 추천이 아직 없음 */
+    val needProposal: Boolean = false,
+    /** AI 로드맵 요청 상태 · 다음 구간 요청 상태 (만드는 중 · 실패) */
+    val aiRoadmap: AiRequests.State? = null,
+    val aiNext: AiRequests.State? = null,
 )
 
 /** 목표 상세: 이번 구간 · 추천 · 로드맵 · 이전 구간 */
@@ -48,9 +54,9 @@ class GoalDetailViewModel(
         combine(
             combine(repository.goals, repository.rounds, repository.sessions) { g, r, s -> Triple(g, r, s) },
             repository.roadmapDrafts,
-            repository.proposals,
+            combine(repository.proposals, AiRequests.states) { p, a -> p to a },
             foldOpen,
-        ) { (goals, rounds, sessions), drafts, proposals, fold ->
+        ) { (goals, rounds, sessions), drafts, (proposals, ai), fold ->
             val goal = goals.firstOrNull { it.id == goalId }
             val mine = rounds.filter { it.goalId == goalId }.sortedBy { it.no }
             GoalDetailUiState(
@@ -64,6 +70,9 @@ class GoalDetailViewModel(
                 feasibility = goal?.takeIf { it.completedAt == null && it.roadmap.isNotEmpty() }
                     ?.let { RoadmapProgress.feasibility(it, rounds, sessions, today()) },
                 foldOpen = fold,
+                needProposal = goal != null && AiRequests.needsProposal(goal, rounds, proposals),
+                aiRoadmap = ai[AiRequests.roadmapKey(goalId)],
+                aiNext = ai[AiRequests.nextKey(goalId)],
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), GoalDetailUiState())
 

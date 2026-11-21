@@ -27,10 +27,12 @@ import com.example.oreum.data.model.Difficulty
 import com.example.oreum.data.model.Goal
 import com.example.oreum.data.model.ItemKind
 import com.example.oreum.data.model.NextProposal
+import com.example.oreum.data.repository.AiRequests
 import com.example.oreum.data.repository.ApproveResult
 import com.example.oreum.data.repository.StudyRepository
 import com.example.oreum.data.repository.StudyRepositoryProvider
 import com.example.oreum.databinding.FragmentNextRoundBinding
+import com.example.oreum.ui.common.AiStateUi
 import com.example.oreum.ui.common.GlassBackdrop
 import com.example.oreum.ui.common.GlassBackgroundDrawable
 import com.example.oreum.ui.home.HomePrefs
@@ -45,7 +47,8 @@ import java.time.LocalDate
 import com.example.oreum.util.showToast
 
 /**
- * AI 다음 구간 추천 (프로토타입 08 · 시뮬레이션)
+ * AI 다음 구간 추천 (프로토타입 08)
+ * - 추천이 없으면 AI(Gemini)에게 요청해요. 만드는 중 · 실패(다시 시도)를 보여 주고, 시뮬레이션으로 대신 만들지 않아요.
  * - 지난 구간 결과로 만든 다음 구간을 보여 주고, '승인하기'를 누르고 확인해야만 다음 구간이 정해져요.
  * - 로드맵을 모두 마쳤으면 '정상 도착'으로 목표를 마쳐요.
  * - 나중에: 추천은 목표 상세 · 홈에 그대로 남아요.
@@ -61,6 +64,8 @@ class NextRoundFragment : Fragment(R.layout.fragment_next_round) {
     private var foldOpen = false
     private var goal: Goal? = null
     private var proposal: NextProposal? = null
+    /** 승인하고 홈으로 가는 중 (화면을 다시 그리지 않아요) */
+    private var leaving = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -112,19 +117,44 @@ class NextRoundFragment : Fragment(R.layout.fragment_next_round) {
         }
         binding.btnApprove.setOnClickListener { approve() }
 
+        // 추천이 없으면 AI에게 요청 (이미 만드는 중이면 기다리고, 실패 상태면 '다시 시도'를 눌러야 다시 보내요)
+        if (AiRequests.states.value[AiRequests.nextKey(goalId)] == null) AiRequests.requestNext(goalId)
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                combine(repository.goals, repository.proposals) { goals, proposals ->
-                    goals.firstOrNull { it.id == goalId } to proposals[goalId]
-                }.collect { (g, p) -> render(g, p) }
+                combine(repository.goals, repository.proposals, AiRequests.states) { goals, proposals, ai ->
+                    Triple(goals.firstOrNull { it.id == goalId }, proposals[goalId], ai[AiRequests.nextKey(goalId)])
+                }.collect { (g, p, ai) -> render(g, p, ai) }
             }
         }
     }
 
-    private fun render(g: Goal?, p: NextProposal?) {
+    private fun render(g: Goal?, p: NextProposal?, ai: AiRequests.State?) {
+        // 승인하고 홈으로 가는 중: 추천이 사라져도 '추천이 없어요' 화면을 그리지 않아요
+        if (leaving) return
         goal = g
         proposal = p
         val round = p?.round
+
+        // AI가 만드는 중 · 실패
+        val aiShown = ai.takeIf { g != null && p == null }
+        AiStateUi.render(
+            binding.aiState, aiShown,
+            loadingTitle = R.string.ai_loading_next,
+            loadingBody = R.string.ai_loading_next_body,
+            onRetry = { AiRequests.requestNext(goalId) },
+            onLater = { later(showToast = false) },
+        )
+        binding.textTitle.isVisible = aiShown == null
+        binding.rowButtons.isVisible = aiShown == null
+        binding.textAiTag.isVisible = p != null && (p.byAi || !p.final)
+        binding.textAiTag.setText(if (p?.byAi == true) R.string.rec_ai_tag_real else R.string.rec_ai_tag)
+        if (aiShown != null) {
+            binding.textEyebrow.isVisible = false
+            binding.groupPlan.isVisible = false
+            binding.textLead.isVisible = false
+            return
+        }
         binding.textEyebrow.text = g?.title.orEmpty()
         binding.textEyebrow.isVisible = g != null && round != null && p?.final != true
 
@@ -229,9 +259,12 @@ class NextRoundFragment : Fragment(R.layout.fragment_next_round) {
         val round = p.round
         if (p.final || round == null) {
             // 정상 도착: 확인 없이 바로 (프로토타입과 같음)
+            leaving = true
             if (repository.approveProposal(g.id, today()) == ApproveResult.ReachedTop) {
                 HomePrefs.summitGoalId = g.id
                 goHome(g.id, null)
+            } else {
+                leaving = false
             }
             return
         }
@@ -240,7 +273,12 @@ class NextRoundFragment : Fragment(R.layout.fragment_next_round) {
             .setMessage(getString(R.string.next_approve_body, round.items.size, DateText.minutes(round.estimatedMinutes)))
             .setNegativeButton(R.string.study_form_cancel, null)
             .setPositiveButton(R.string.next_approve) { _, _ ->
-                val res = repository.approveProposal(g.id, today()) as? ApproveResult.NextReady ?: return@setPositiveButton
+                leaving = true
+                val res = repository.approveProposal(g.id, today()) as? ApproveResult.NextReady
+                if (res == null) {
+                    leaving = false
+                    return@setPositiveButton
+                }
                 goHome(g.id, getString(R.string.toast_next_approved, res.round.no))
             }
             .show()

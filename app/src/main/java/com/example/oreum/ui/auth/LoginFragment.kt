@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
@@ -14,6 +15,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.oreum.R
 import com.example.oreum.data.repository.AuthRepositoryProvider
+import com.example.oreum.databinding.DialogFindPasswordBinding
 import com.example.oreum.databinding.FragmentLoginBinding
 import com.example.oreum.util.Season
 import com.example.oreum.util.applySystemBarsPadding
@@ -52,19 +54,47 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         }
         binding.btnLogin.setOnClickListener { viewModel.login() }
         binding.btnToSignup.setOnClickListener { findNavController().navigate(R.id.action_login_to_signup) }
-        binding.btnFindPassword.setOnClickListener {
-            MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.find_password_title)
-                .setMessage(R.string.find_password_body)
-                .setPositiveButton(R.string.dialog_close, null)
-                .show()
-        }
+        binding.btnFindPassword.setOnClickListener { openFindPassword() }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect(::render)
             }
         }
+    }
+
+    /** 비밀번호 찾기: 이메일 입력 → 재설정 링크 보내기 (입력한 로그인 이메일을 미리 채워요) */
+    private fun openFindPassword() {
+        val db = DialogFindPasswordBinding.inflate(layoutInflater)
+        db.inputResetEmail.setText(viewModel.uiState.value.email)
+        db.inputResetEmail.doAfterTextChanged { db.layoutResetEmail.error = null }
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.find_password_title)
+            .setView(db.root)
+            .setNegativeButton(R.string.study_form_cancel, null)
+            .setPositiveButton(R.string.find_password_send, null)
+            .create()
+        dialog.setOnShowListener {
+            val send = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            // 확인 버튼을 눌러도 바로 닫지 않고, 보낸 뒤에 닫아요 (오류면 입력칸 아래에 표시)
+            send.setOnClickListener {
+                val email = db.inputResetEmail.text?.toString().orEmpty().trim()
+                send.isEnabled = false
+                send.setText(R.string.find_password_sending)
+                viewLifecycleOwner.lifecycleScope.launch {
+                    val error = viewModel.sendPasswordReset(email)
+                    send.isEnabled = true
+                    send.setText(R.string.find_password_send)
+                    if (error == null) {
+                        dialog.dismiss()
+                        requireActivity().showToast(R.string.toast_find_password_sent)
+                    } else {
+                        db.layoutResetEmail.error = getString(error.messageRes())
+                    }
+                }
+            }
+        }
+        dialog.show()
     }
 
     private fun render(state: LoginUiState) {
