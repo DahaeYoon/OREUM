@@ -75,6 +75,21 @@ class LocalStudyRepository(
         _proposals.value = s.proposals
     }
 
+    /** 저장소(Firestore)에서 불러온 데이터로 지금 계정의 데이터를 통째로 바꿔요 */
+    fun replaceAll(
+        goals: List<Goal>,
+        rounds: List<StudyRound>,
+        sessions: List<StudySession>,
+        drafts: Map<String, RoadmapDraft>,
+        proposals: Map<String, NextProposal>,
+    ) {
+        _goals.value = goals
+        _rounds.value = rounds
+        _sessions.value = sessions
+        _roadmapDrafts.value = drafts
+        _proposals.value = proposals
+    }
+
     override fun clearAll() {
         _goals.value = emptyList()
         _rounds.value = emptyList()

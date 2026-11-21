@@ -4,7 +4,6 @@ import com.example.oreum.data.model.AuthError
 import com.example.oreum.data.model.User
 import com.example.oreum.data.repository.AuthRepository
 import com.example.oreum.data.repository.AuthResult
-import com.google.android.gms.tasks.Task
 import com.google.firebase.FirebaseNetworkException
 import com.google.firebase.FirebaseTooManyRequestsException
 import com.google.firebase.auth.FirebaseAuth
@@ -17,9 +16,6 @@ import com.google.firebase.auth.UserProfileChangeRequest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 /**
  * Firebase Authentication (이메일 · 비밀번호) 로그인.
@@ -99,17 +95,5 @@ class FirebaseAuthRepository(
         is FirebaseNetworkException -> AuthError.NETWORK
         is FirebaseTooManyRequestsException -> AuthError.TOO_MANY_REQUESTS
         else -> AuthError.UNKNOWN
-    }
-}
-
-/** Firebase 작업(Task)이 끝날 때까지 기다려요 (코루틴용) */
-private suspend fun <T> Task<T>.await(): T = suspendCancellableCoroutine { cont ->
-    addOnCompleteListener { task ->
-        val e = task.exception
-        when {
-            e != null -> cont.resumeWithException(e)
-            task.isCanceled -> cont.cancel()
-            else -> cont.resume(task.result)
-        }
     }
 }
