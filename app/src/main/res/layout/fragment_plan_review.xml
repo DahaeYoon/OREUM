@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- AI 로드맵 · 1구간 계획 (시뮬레이션): 요약 숫자 · 전체 로드맵 · 1구간 할 일 · 나중에 / 승인하고 시작 -->
+<!-- AI 로드맵 · 1구간 계획: 요약 숫자 · 전체 로드맵 · 1구간 할 일 · 나중에 / 승인하고 시작 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -69,6 +69,11 @@
                 android:textAppearance="@style/TextAppearance.OREUM.Caption"
                 android:visibility="gone" />
 
+            <!-- AI가 만드는 중 · 실패 (다시 시도) -->
+            <include
+                android:id="@+id/ai_state"
+                layout="@layout/view_ai_state" />
+
             <LinearLayout
                 android:id="@+id/group_draft"
                 android:layout_width="match_parent"
@@ -83,6 +88,7 @@
                     android:orientation="horizontal">
 
                     <TextView
+                        android:id="@+id/text_ai_tag"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="@drawable/bg_ai_tag"

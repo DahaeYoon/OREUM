@@ -7,6 +7,7 @@ import com.example.oreum.data.model.PlanStatus
 import com.example.oreum.data.model.RoundItem
 import com.example.oreum.data.model.RoundStatus
 import com.example.oreum.data.model.StudyRound
+import com.example.oreum.data.repository.AiRequests
 import com.example.oreum.data.repository.AuthRepository
 import com.example.oreum.data.repository.AuthRepositoryProvider
 import com.example.oreum.data.repository.StudyRepository
@@ -29,12 +30,14 @@ object HomePrefs {
 
 /** 산 아래 패널의 카드 종류 (프로토타입 홈 next-card) */
 sealed interface NextCard {
-    /** 로드맵이 없어요 → AI 로드맵 */
-    data class NoPlan(val goalId: String) : NextCard
+    /** 로드맵이 없어요 → AI 로드맵 (ai = 만드는 중 · 실패) */
+    data class NoPlan(val goalId: String, val ai: AiRequests.State? = null) : NextCard
     /** AI 로드맵 승인 대기 → 확인 */
     data class Draft(val goalId: String) : NextCard
     /** AI 다음 구간 추천 도착 → 확인 (round = null이면 마지막 → 정상 도착) */
     data class Proposal(val goalId: String, val round: StudyRound?) : NextCard
+    /** 구간 결과를 제출했는데 다음 구간 추천이 아직 없어요 → AI 추천 받기 (ai = 만드는 중 · 실패) */
+    data class NeedProposal(val goalId: String, val lastNo: Int, val ai: AiRequests.State?) : NextCard
     /** 승인했지만 시작 전 구간 → 시작 */
     data class Ready(val round: StudyRound, val goalTitle: String) : NextCard
     /** 진행 중 구간의 다음 항목 → 완료 */
@@ -85,18 +88,19 @@ class HomeViewModel(
     val uiState: StateFlow<HomeUiState> =
         combine(
             combine(repository.goals, repository.rounds) { g, r -> g to r },
-            repository.roadmapDrafts,
+            combine(repository.roadmapDrafts, AiRequests.states) { d, a -> d to a },
             repository.proposals,
             auth.currentUser,
             selected,
-        ) { (goals, rounds), drafts, proposals, user, sel0 ->
+        ) { (goals, rounds), (drafts, ai), proposals, user, sel0 ->
             val sel = sel0?.takeIf { id -> goals.any { it.id == id } }
             val goal = goals.firstOrNull { it.id == sel }
             val curOf = { g: Goal -> rounds.filter { it.goalId == g.id && it.status != RoundStatus.DONE }.maxByOrNull { it.no } }
 
             // 전체 보기: 추천 · 지금 구간이 있는 가장 가까운 목표 → 승인 대기 목표
             val active = goals.filter { it.completedAt == null }.sortedBy { it.dueAt }
-            val focus = goal ?: active.firstOrNull { proposals.containsKey(it.id) || curOf(it) != null }
+            val needNext = { g: Goal -> AiRequests.needsProposal(g, rounds, proposals) }
+            val focus = goal ?: active.firstOrNull { proposals.containsKey(it.id) || curOf(it) != null || needNext(it) }
                 ?: active.firstOrNull { drafts.containsKey(it.id) } ?: active.firstOrNull()
 
             val round = focus?.let(curOf)
@@ -104,8 +108,14 @@ class HomeViewModel(
                 focus == null -> NextCard.Empty
                 focus.completedAt != null -> NextCard.Top
                 drafts.containsKey(focus.id) -> NextCard.Draft(focus.id)
-                focus.planStatus == PlanStatus.NONE || focus.roadmap.isEmpty() -> NextCard.NoPlan(focus.id)
+                focus.planStatus == PlanStatus.NONE || focus.roadmap.isEmpty() ->
+                    NextCard.NoPlan(focus.id, ai[AiRequests.roadmapKey(focus.id)])
                 proposals.containsKey(focus.id) -> NextCard.Proposal(focus.id, proposals.getValue(focus.id).round)
+                round == null && needNext(focus) -> NextCard.NeedProposal(
+                    focus.id,
+                    rounds.filter { it.goalId == focus.id }.maxOf { it.no },
+                    ai[AiRequests.nextKey(focus.id)],
+                )
                 round == null -> NextCard.Empty
                 round.status == RoundStatus.READY -> NextCard.Ready(round, focus.title)
                 else -> round.items.firstOrNull { !it.done }?.let { NextCard.Next(round, it, focus.title) }

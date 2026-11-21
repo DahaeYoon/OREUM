@@ -15,10 +15,8 @@ import androidx.navigation.fragment.findNavController
 import com.example.oreum.R
 import com.example.oreum.data.model.PlanStatus
 import com.example.oreum.data.model.RoundStatus
-import com.example.oreum.data.repository.StudyRepositoryProvider
 import com.example.oreum.databinding.FragmentStudyBinding
 import com.example.oreum.databinding.ItemGoalCardBinding
-import com.example.oreum.ui.aiplan.PlanDrafts
 import com.example.oreum.util.DateText
 import com.example.oreum.util.navigateSafe
 import com.example.oreum.util.Season
@@ -149,12 +147,10 @@ class StudyFragment : Fragment(R.layout.fragment_study) {
     }
 
     /**
-     * AI 로드맵 · 1구간 계획 화면으로 이동 (시뮬레이션).
-     * 승인 대기 초안이 있으면 그대로 보여 주고, 없으면 새로 만들어요.
+     * AI 로드맵 · 1구간 계획 화면으로 이동.
+     * 승인 대기 초안이 있으면 그대로 보여 주고, 없으면 그 화면에서 AI에게 요청해요 (실패하면 다시 시도).
      */
     fun openPlanReview(goalId: String) {
-        val repository = StudyRepositoryProvider.instance
-        if (repository.roadmapDrafts.value[goalId] == null) PlanDrafts.generateFor(goalId, repository)
         navigateSafe(
             R.id.action_study_to_planReview,
             Bundle().apply { putString(GoalFormViewModel.ARG_GOAL_ID, goalId) },

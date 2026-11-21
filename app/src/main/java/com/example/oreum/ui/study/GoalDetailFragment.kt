@@ -20,7 +20,7 @@ import com.example.oreum.databinding.ItemRoadmapStageBinding
 import com.example.oreum.databinding.ItemRoundHistoryBinding
 import com.example.oreum.databinding.ItemRoundItemBinding
 import com.example.oreum.domain.usecase.RoadmapProgress
-import com.example.oreum.ui.aiplan.PlanDrafts
+import com.example.oreum.data.repository.AiRequests
 import com.example.oreum.ui.round.NextRoundFragment
 import com.example.oreum.ui.round.RoundDetailSheet
 import com.example.oreum.ui.round.RoundLogSheet
@@ -108,16 +108,16 @@ class GoalDetailFragment : Fragment(R.layout.fragment_goal_detail) {
                 binding.btnState.isVisible = true
                 binding.btnState.setText(R.string.study_do_review)
                 binding.btnState.icon = null
-                binding.btnState.setOnClickListener { openReview(generate = false) }
+                binding.btnState.setOnClickListener { openReview() }
             }
             goal.planStatus == PlanStatus.NONE || goal.roadmap.isEmpty() -> {
                 binding.cardState.isVisible = true
                 binding.textStateTitle.setText(R.string.goal_detail_none_title)
-                binding.textStateBody.setText(R.string.goal_detail_none_body)
+                binding.textStateBody.setText(aiCap(state.aiRoadmap, R.string.goal_detail_none_body))
                 binding.btnState.isVisible = true
                 binding.btnState.setText(R.string.goal_detail_make)
                 binding.btnState.setIconResource(R.drawable.ic_spark)
-                binding.btnState.setOnClickListener { openReview(generate = true) }
+                binding.btnState.setOnClickListener { openReview() }
             }
             proposal != null -> {
                 binding.cardState.isVisible = true
@@ -130,8 +130,24 @@ class GoalDetailFragment : Fragment(R.layout.fragment_goal_detail) {
                 binding.btnState.setIconResource(R.drawable.ic_spark)
                 binding.btnState.setOnClickListener { NextRoundFragment.open(findNavController(), viewModel.goalId) }
             }
+            state.needProposal -> {
+                binding.cardState.isVisible = true
+                binding.textStateTitle.setText(R.string.home_need_proposal_title)
+                binding.textStateBody.setText(aiCap(state.aiNext, R.string.home_need_proposal_cap))
+                binding.btnState.isVisible = true
+                binding.btnState.setText(R.string.home_btn_ai_next)
+                binding.btnState.setIconResource(R.drawable.ic_spark)
+                binding.btnState.setOnClickListener { NextRoundFragment.open(findNavController(), viewModel.goalId) }
+            }
             else -> binding.cardState.isVisible = false
         }
+    }
+
+    /** AI 요청 상태에 맞는 안내 문구 (만드는 중 · 실패 · 기본) */
+    private fun aiCap(ai: AiRequests.State?, default: Int): Int = when (ai) {
+        AiRequests.State.Running -> R.string.home_ai_working_cap
+        is AiRequests.State.Failed -> R.string.home_ai_failed_cap
+        null -> default
     }
 
     /** 이번 구간: 체크 · 항목 추가 · 시작 */
@@ -297,8 +313,8 @@ class GoalDetailFragment : Fragment(R.layout.fragment_goal_detail) {
         else getString(R.string.round_date_span, first, DateText.monthDay(LocalDate.ofEpochDay(d.last())), d.size)
     }
 
-    private fun openReview(generate: Boolean) {
-        if (generate) PlanDrafts.generateFor(viewModel.goalId)
+    /** AI 로드맵 확인 화면: 초안이 없으면 그 화면에서 AI에게 요청해요 */
+    private fun openReview() {
         navigateSafe(
             R.id.action_goalDetail_to_planReview,
             Bundle().apply { putString(GoalFormViewModel.ARG_GOAL_ID, viewModel.goalId) },
