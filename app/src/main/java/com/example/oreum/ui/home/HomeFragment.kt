@@ -14,6 +14,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -24,6 +25,7 @@ import com.example.oreum.data.model.RoundStatus
 import com.example.oreum.data.model.TrailOrder
 import com.example.oreum.databinding.FragmentHomeBinding
 import com.example.oreum.data.repository.AiRequests
+import com.example.oreum.data.repository.StudyRepositoryProvider
 import com.example.oreum.ui.common.GlassBackdrop
 import com.example.oreum.ui.common.GlassBackgroundDrawable
 import com.example.oreum.ui.round.NextRoundFragment
@@ -32,7 +34,6 @@ import com.example.oreum.ui.study.GoalDetailViewModel
 import com.example.oreum.util.DateText
 import com.example.oreum.util.navigateSafe
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -55,6 +56,19 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private var backdrop: GlassBackdrop? = null
     private var panelFold = false
+    /** 완료 버튼 때문에 자동으로 패널을 내렸는지 */
+    private var autoFolded = false
+    /** 완료 처리 중 (패널이 내려가는 동안 두 번 눌러도 한 번만) */
+    private var ticking = false
+    /** 완료 때문에 산을 확대해 두었는지 (결과 기록을 닫으면 되돌려요) */
+    private var tickFocused = false
+    /** 지금 위치가 보이도록 산을 맞춘 진행률 (바뀌면 다시 맞춰요) */
+    private var lastShownRate: Float? = null
+    private val sheetWatcher = object : FragmentManager.FragmentLifecycleCallbacks() {
+        override fun onFragmentDestroyed(fm: FragmentManager, f: Fragment) {
+            if (f is RoundLogSheet && _binding != null) restorePanel()
+        }
+    }
     private var lastState: HomeUiState? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -74,7 +88,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         binding.btnGoal.setOnClickListener { HomeGoalSheet().show(childFragmentManager, HomeGoalSheet.TAG) }
         binding.textGoal.setOnClickListener { binding.btnGoal.performClick() }
-        binding.grabClimb.setOnClickListener { setPanelFold(!panelFold) }
+        binding.grabClimb.setOnClickListener {
+            autoFolded = false
+            setPanelFold(!panelFold)
+        }
+        childFragmentManager.registerFragmentLifecycleCallbacks(sheetWatcher, false)
         binding.btnRoundAll.setOnClickListener {
             val r = lastState?.round ?: return@setOnClickListener
             HomeRoundSheet.newInstance(r.id).show(childFragmentManager, HomeRoundSheet.TAG)
@@ -112,6 +130,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             ),
             animateFrom = viewModel.takeAnimateFrom(),
         )
+        // 지금 위치(점)가 아래 패널에 가리거나 화면 밖이면 산을 살짝 옮겨요 (완료 연출 중에는 그대로)
+        val rate = state.progress.rate
+        if (!ticking && !tickFocused && rate != lastShownRate) {
+            lastShownRate = rate
+            binding.mountain.post {
+                if (_binding != null && !tickFocused) binding.mountain.ensureVisible(rate, visibleBottom(folded = panelFold))
+            }
+        }
 
         // 산 고르기 · 마감
         binding.textGoal.text = state.goal?.title ?: getString(R.string.home_all_goals)
@@ -235,24 +261,60 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     // ---------- 동작 ----------
     /** 항목 완료 체크 (패널 카드 · 항목 시트에서 함께 사용) */
     fun tick(roundId: String, itemId: String) {
-        val r = viewModel.toggleItem(roundId, itemId) ?: return
-        when {
-            r.nowDone && r.roundAllDone -> {
-                // 항목을 모두 마쳤으면: 산 이동을 보여 준 뒤 결과 기록을 권해요
-                (childFragmentManager.findFragmentByTag(HomeRoundSheet.TAG) as? HomeRoundSheet)?.dismiss()
-                binding.root.postDelayed({
-                    if (_binding == null || !isAdded) return@postDelayed
-                    MaterialAlertDialogBuilder(requireContext())
-                        .setTitle(getString(R.string.toast_round_all_done, r.roundNo))
-                        .setMessage(R.string.round_all_done_body)
-                        .setNegativeButton(R.string.round_submitted_later, null)
-                        .setPositiveButton(R.string.round_all_done_ok) { _, _ -> openLog(roundId, submit = true) }
-                        .show()
-                }, 900)
-            }
-            r.nowDone -> toast(getString(R.string.toast_home_done_move, r.title.removeSuffix(" (이어서)"), (r.before * 100).toInt(), (r.after * 100).toInt()))
-            else -> toast(getString(R.string.toast_home_tick_off, r.title.removeSuffix(" (이어서)")))
+        if (ticking) return
+        // 해제는 바로 (산 이동 없음)
+        val item = StudyRepositoryProvider.instance.round(roundId)?.items?.firstOrNull { it.id == itemId } ?: return
+        if (item.done) {
+            val r = viewModel.toggleItem(roundId, itemId) ?: return
+            toast(getString(R.string.toast_home_tick_off, r.title.removeSuffix(" (이어서)")))
+            return
         }
+        // 완료: ① 항목 시트를 닫고 패널을 내려 산을 보여 줘요 → ② 패널이 내려간 뒤 체크해서 점이 트랙을 따라 움직여요
+        //       → ③ 움직임이 끝나면 학습 결과 기록(오늘 공부한 시간 · 메모)을 열어요
+        (childFragmentManager.findFragmentByTag(HomeRoundSheet.TAG) as? HomeRoundSheet)?.dismiss()
+        ticking = true
+        val wasFolded = panelFold
+        if (!wasFolded) {
+            autoFolded = true
+            setPanelFold(true)
+        }
+        // 지금 위치를 확대해서 패널 위 보이는 곳 가운데로 (점이 산 아래쪽에 있어도 보여요)
+        tickFocused = true
+        binding.mountain.focusOn(viewModel.uiState.value.progress.rate, visibleBottom(folded = true))
+        binding.root.postDelayed({
+            ticking = false
+            if (_binding == null || !isAdded) return@postDelayed
+            val r = viewModel.toggleItem(roundId, itemId) ?: return@postDelayed run { restorePanel() }
+            toast(getString(R.string.toast_home_done_move, r.title.removeSuffix(" (이어서)"), (r.before * 100).toInt(), (r.after * 100).toInt()))
+            binding.root.postDelayed({
+                if (_binding == null || !isAdded) return@postDelayed
+                openLog(roundId, submit = r.roundAllDone)
+            }, if (r.after > r.before) TRACK_MOVE_MS else 600L)
+        }, PANEL_MOVE_MS)
+    }
+
+    /** 아래 패널에 가리지 않는 산 영역의 아래 끝 (산 뷰 기준 px). folded = 패널을 내렸을 때 */
+    private fun visibleBottom(folded: Boolean): Float {
+        val panel = binding.pageClimb
+        val a = IntArray(2)
+        val b = IntArray(2)
+        panel.getLocationInWindow(a)
+        binding.mountain.getLocationInWindow(b)
+        val openTop = a[1] - b[1] - panel.translationY
+        return openTop + if (folded) (binding.panel.height - dp(74)).toFloat() else 0f
+    }
+
+    /** 완료 때문에 자동으로 내린 패널이면 다시 올려요 (결과 기록을 닫은 뒤) */
+    private fun restorePanel() {
+        if (autoFolded && panelFold) setPanelFold(false)
+        if (tickFocused) {
+            // 원래 크기로 돌아가되, 지금 위치가 패널에 가리지 않게
+            val rate = viewModel.uiState.value.progress.rate
+            lastShownRate = rate
+            binding.mountain.ensureVisible(rate, visibleBottom(folded = panelFold), force = true)
+        }
+        tickFocused = false
+        autoFolded = false
     }
 
     private fun openFlag() {
@@ -320,6 +382,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     fun selectGoal(goalId: String?) {
         binding.mountain.resetView()
+        lastShownRate = null
         viewModel.selectGoal(goalId)
     }
 
@@ -380,12 +443,16 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun dp(value: Int) = (value * resources.displayMetrics.density).roundToInt()
 
     override fun onDestroyView() {
+        childFragmentManager.unregisterFragmentLifecycleCallbacks(sheetWatcher)
         _binding = null
         backdrop = null
         super.onDestroyView()
     }
 
     private companion object {
+        /** 패널이 내려가는 시간 · 점이 트랙을 따라 움직이는 시간 (MountainView.ANIM_SEC 1.5초 + 여유) */
+        const val PANEL_MOVE_MS = 500L
+        const val TRACK_MOVE_MS = 1_800L
         val DATE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("M월 d일 EEEE", Locale.KOREAN)
     }
 }

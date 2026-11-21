@@ -92,7 +92,9 @@ class GeminiPlanner(
         return when {
             e is AiPlanSpec.BadResponse || names.contains("JSONException") || names.contains("SerializationException") -> AiFailure.BAD_RESPONSE
             chain.any { it is IOException } || "unable to resolve host" in text || "timeout" in text -> AiFailure.NETWORK
-            names.contains("QuotaExceeded") || "429" in text || "resource_exhausted" in text || "quota" in text -> AiFailure.BUSY
+            names.contains("QuotaExceeded") || "429" in text || "resource_exhausted" in text || "quota" in text ->
+                // 하루 한도 (예: GenerateRequestsPerDay...)인지, 분당 한도인지 구분해요
+                if ("perday" in text || "per day" in text || "per_day" in text || "daily" in text) AiFailure.DAILY_LIMIT else AiFailure.BUSY
             "app check" in text || "appcheck" in text || "app-check" in text || names.contains("ServiceDisabled") ||
                 names.contains("InvalidAPIKey") || "403" in text || "permission" in text -> AiFailure.SETUP
             else -> AiFailure.UNKNOWN
