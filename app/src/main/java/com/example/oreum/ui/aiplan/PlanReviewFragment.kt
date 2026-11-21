@@ -2,7 +2,6 @@ package com.example.oreum.ui.aiplan
 
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -24,6 +23,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import com.example.oreum.util.showToast
 
 /** AI 로드맵 · 1구간 계획 (시뮬레이션): 확인 · 항목 수정 · 나중에 · 승인하고 시작 → 홈 */
 class PlanReviewFragment : Fragment(R.layout.fragment_plan_review) {
@@ -155,7 +155,7 @@ class PlanReviewFragment : Fragment(R.layout.fragment_plan_review) {
     }
 
     private fun toast(text: String) {
-        Toast.makeText(requireContext().applicationContext, text, Toast.LENGTH_SHORT).show()
+        requireActivity().showToast(text)
     }
 
     override fun onDestroyView() {

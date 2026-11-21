@@ -12,7 +12,6 @@ import android.view.Gravity
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
@@ -43,6 +42,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import com.example.oreum.util.showToast
 
 /**
  * AI 다음 구간 추천 (프로토타입 08 · 시뮬레이션)
@@ -363,7 +363,7 @@ class NextRoundFragment : Fragment(R.layout.fragment_next_round) {
     }
 
     private fun today() = LocalDate.now().toEpochDay()
-    private fun toast(text: String) = Toast.makeText(requireContext().applicationContext, text, Toast.LENGTH_SHORT).show()
+    private fun toast(text: String) = requireActivity().showToast(text)
     private fun color(res: Int) = requireContext().getColor(res)
     private fun dp(value: Int) = (value * resources.displayMetrics.density).toInt()
     private fun dpf(value: Int) = value * resources.displayMetrics.density
