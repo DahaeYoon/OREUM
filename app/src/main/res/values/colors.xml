@@ -15,6 +15,14 @@
     <color name="oreum_brand_blue">#4B8DB5</color>
     <color name="oreum_error">#C0563B</color>
 
+    <!-- 프로토타입 글자 단계 (ink · ink2 · ink3) -->
+    <color name="oreum_ink2">#526864</color>
+    <color name="oreum_ink3">#7E918D</color>
+    <color name="oreum_coral_ink">#C0573E</color>
+    <color name="oreum_prio_high_ink">#B5492E</color>
+    <color name="oreum_today_green">#2F8A6F</color>
+    <color name="oreum_meta_dot">#B8C6C1</color>
+
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>

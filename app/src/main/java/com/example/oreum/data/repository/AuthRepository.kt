@@ -22,5 +22,8 @@ interface AuthRepository {
 
     suspend fun signUp(nickname: String, email: String, password: String): AuthResult
 
+    /** 로그인한 사용자 정보 저장 (학습 가능 시간 · 페이스 반영 · 알림 등) */
+    fun updateUser(user: User)
+
     fun signOut()
 }

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 화면 위 제목 바 (프로토타입 .appbar: 연한 민트 55%) -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#8CF0F6F3" />
+</shape>

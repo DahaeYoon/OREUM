@@ -54,6 +54,12 @@ class LocalAuthRepository : AuthRepository {
         return AuthResult.Success(user)
     }
 
+    override fun updateUser(user: User) {
+        val key = user.email.trim().lowercase()
+        accounts[key]?.let { accounts[key] = it.copy(user = user) }
+        _currentUser.value = user
+    }
+
     override fun signOut() {
         _currentUser.value = null
     }

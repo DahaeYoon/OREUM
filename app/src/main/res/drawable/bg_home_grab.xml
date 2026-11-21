@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 카드 접기 손잡이: 크림 78% · 위쪽만 둥글게 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#C7FFFCF5" />
+    <stroke android:width="1dp" android:color="#E6FFFFFF" />
+    <corners android:topLeftRadius="10dp" android:topRightRadius="10dp" android:bottomLeftRadius="0dp" android:bottomRightRadius="0dp" />
+</shape>

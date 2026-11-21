@@ -2,7 +2,6 @@ package com.example.oreum.ui.auth
 
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
@@ -16,6 +15,7 @@ import com.example.oreum.databinding.FragmentSignupBinding
 import com.example.oreum.util.Season
 import com.example.oreum.util.applySystemBarsPadding
 import kotlinx.coroutines.launch
+import com.example.oreum.util.showToast
 
 /** 회원가입: 닉네임 · 이메일 · 비밀번호 · 비밀번호 확인 · 약관 동의 · 가입하기 */
 class SignupFragment : Fragment(R.layout.fragment_signup) {
@@ -61,7 +61,7 @@ class SignupFragment : Fragment(R.layout.fragment_signup) {
 
         state.signedUpNickname?.let { nickname ->
             viewModel.onNavigated()
-            Toast.makeText(requireContext(), getString(R.string.toast_signed_up, nickname), Toast.LENGTH_SHORT).show()
+            requireActivity().showToast(getString(R.string.toast_signed_up, nickname))
             findNavController().navigate(R.id.action_signup_to_home)
         }
     }

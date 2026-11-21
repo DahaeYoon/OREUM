@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 정상 도착 (프로토타입 summit-pop · 1차): 작은 산 · 등반 완료 · 목표 · 마친 구간 / 학습 시간 / 등반 기간 · 새로운 산 등반하기 · 정상 둘러보기 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingHorizontal="20dp"
+    android:paddingTop="22dp"
+    android:paddingBottom="14dp">
+
+    <ImageView
+        android:layout_width="72dp"
+        android:layout_height="48dp"
+        android:importantForAccessibility="no"
+        android:src="@drawable/ic_summit" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="@string/summit_label"
+        android:textColor="@color/oreum_forest_deep"
+        android:textSize="12.5sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:fontFamily="sans-serif-black"
+        android:text="@string/summit_title"
+        android:textColor="@color/oreum_dark_text"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/text_goal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:gravity="center"
+        android:textColor="@color/oreum_ink2"
+        android:textSize="13.5sp"
+        tools:text="컴퓨터구조 중간고사" />
+
+    <LinearLayout
+        android:id="@+id/box_stats"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:orientation="horizontal"
+        android:paddingVertical="12dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/stat_rounds"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/oreum_dark_text"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                tools:text="4개" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/summit_stat_rounds"
+                android:textColor="@color/oreum_ink3"
+                android:textSize="11.5sp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="#1A285041" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/stat_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/oreum_dark_text"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                tools:text="6시간 10분" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/summit_stat_time"
+                android:textColor="@color/oreum_ink3"
+                android:textSize="11.5sp" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="#1A285041" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/stat_days"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/oreum_dark_text"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                tools:text="9일" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/summit_stat_days"
+                android:textColor="@color/oreum_ink3"
+                android:textSize="11.5sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_new"
+        style="@style/Widget.OREUM.Button.Primary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:minHeight="48dp"
+        android:text="@string/summit_new"
+        app:icon="@drawable/ic_route"
+        app:iconGravity="textStart"
+        app:iconPadding="6dp"
+        app:iconSize="16dp"
+        app:iconTint="@color/white" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_look"
+        style="@style/Widget.OREUM.Button.SheetText"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_marginTop="4dp"
+        android:text="@string/summit_look" />
+</LinearLayout>

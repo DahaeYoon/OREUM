@@ -134,63 +134,6 @@
                     android:layout_height="wrap_content"
                     android:text="@string/login_to_signup" />
             </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/btn_test_account"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="28dp"
-                android:background="@drawable/bg_test_account"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="14dp"
-                android:paddingVertical="10dp">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/login_test_title"
-                        android:textColor="#2F6F5E"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/login_test_account"
-                        android:textColor="@color/oreum_sub_text"
-                        android:textSize="11.5sp" />
-                </LinearLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/bg_chip_mint"
-                    android:paddingHorizontal="10dp"
-                    android:paddingVertical="3dp"
-                    android:text="@string/login_test_fill"
-                    android:textColor="@color/white"
-                    android:textSize="11.5sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:gravity="center"
-                android:text="@string/auth_local_notice"
-                android:textColor="@color/oreum_sub_text"
-                android:textSize="11sp" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </FrameLayout>

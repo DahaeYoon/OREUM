@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- AI · 시뮬레이션 알약: 민트 → 하늘 그라데이션 · 모서리 10 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <gradient android:angle="0" android:startColor="#E3F1EC" android:endColor="#E6EFF6" />
+    <corners android:radius="10dp" />
+</shape>
