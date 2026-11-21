@@ -54,6 +54,8 @@ dependencies {
     // 1번: Firebase Authentication (BoM이 Firebase 라이브러리 버전을 맞춰 줘요)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
+    // 2번: Cloud Firestore (계정별 목표 · 구간 · 학습 기록 저장)
+    implementation(libs.firebase.firestore)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
