@@ -25,6 +25,9 @@ interface AuthRepository {
     /** 비밀번호 재설정 링크를 이메일로 보내요. 성공하면 null, 실패하면 오류 종류 */
     suspend fun sendPasswordReset(email: String): AuthError? = AuthError.UNKNOWN
 
+    /** 닉네임 바꾸기. 성공하면 null, 실패하면 오류 종류 */
+    suspend fun updateNickname(nickname: String): AuthError? = AuthError.UNKNOWN
+
     /** 로그인한 사용자 정보 저장 (학습 가능 시간 · 페이스 반영 · 알림 등) */
     fun updateUser(user: User)
 

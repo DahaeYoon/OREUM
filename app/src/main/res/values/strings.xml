@@ -133,7 +133,7 @@
     <string name="home_mountain_desc">학습 등반 진행 상황 · 끌어서 둘러보고 두 손가락으로 확대할 수 있어요</string>
     <string name="home_greeting">%1$s님,\n오늘도 한 걸음 올라가 볼까요?</string>
     <string name="home_default_name">오름</string>
-    <string name="home_next_label">다음 단계</string>
+    <string name="home_next_label">다음 할 일</string>
     <string name="home_flag_tip_1">깃발을</string>
     <string name="home_flag_tip_2">눌러 보세요</string>
     <string name="home_all_goals">전체 목표</string>
@@ -147,7 +147,7 @@
     <string name="home_top_label">정상 도착</string>
     <string name="home_top_cap">다음 산을 골라 볼까요?</string>
     <string name="home_btn_new_mountain">새 산</string>
-    <string name="toast_home_done_move">‘%1$s’ 완료! %2$d%% → %3$d%%</string>
+    <string name="toast_home_done_move">‘%1$s’ 완료! 이번 구간 %2$d/%3$d</string>
     <string name="home_close">닫기</string>
     <string name="home_pick_title">어떤 목표의 산을 볼까요?</string>
     <string name="home_pick_all">전체 목표 합쳐 보기</string>
@@ -341,17 +341,17 @@
     <string name="round_status_done">완료</string>
     <!-- 1차 R7: 마이 · 정상 도착 -->
     <string name="mypage_account">계정</string>
-    <string name="mypage_reset">샘플 데이터 불러오기</string>
-    <string name="mypage_reset_title">샘플 데이터를 불러올까요?</string>
-    <string name="mypage_reset_body">지금 계정의 목표 · 구간 · 학습 기록이 샘플로 바뀌어요. 지금 데이터는 사라져요.</string>
-    <string name="mypage_reset_ok">불러오기</string>
-    <string name="toast_mypage_reset">샘플 데이터를 불러왔어요</string>
-    <string name="mypage_clear">데이터 모두 지우기</string>
-    <string name="mypage_clear_title">데이터를 모두 지울까요?</string>
-    <string name="mypage_clear_body">지금 계정의 목표 · 구간 · 학습 기록이 모두 사라지고, 처음 가입한 상태로 돌아가요.</string>
-    <string name="mypage_clear_ok">지우기</string>
-    <string name="toast_mypage_clear">데이터를 모두 지웠어요</string>
     <string name="mypage_logout">로그아웃</string>
+    <string name="mypage_nickname">닉네임 변경</string>
+    <string name="mypage_nickname_helper">2~10자로 정해 주세요</string>
+    <string name="mypage_nickname_save">저장</string>
+    <string name="mypage_nickname_saving">저장하는 중…</string>
+    <string name="toast_mypage_nickname">닉네임을 바꿨어요</string>
+    <string name="mypage_app">앱 정보</string>
+    <string name="mypage_version">버전</string>
+    <string name="mypage_about">오름 소개</string>
+    <string name="mypage_about_title">오름 · OREUM</string>
+    <string name="mypage_about_body">목표를 산으로, 공부를 등산로로 보여 주는 적응형 학습 코칭 앱이에요.\n\n· AI(Google Gemini)가 목표에 맞는 로드맵과 구간 계획을 만들고, 구간 결과를 분석해 다음 구간을 추천해요.\n· AI 계획은 내가 확인하고 승인해야만 적용돼요.\n· 학습 기록은 내 계정에만 저장돼요.\n\n버전 %1$s</string>
     <string name="mypage_logout_title">로그아웃할까요?</string>
     <string name="mypage_logout_body">다시 로그인하면 이어서 사용할 수 있어요.</string>
     <string name="summit_label">등반 완료</string>

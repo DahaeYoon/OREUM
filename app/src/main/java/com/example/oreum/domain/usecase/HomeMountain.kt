@@ -37,6 +37,33 @@ object HomeMountain {
         val top: Boolean get() = total > 0 && rate >= 1f
     }
 
+    /**
+     * 홈 산 = 이번 구간: 항목 하나 = 산 위 점 하나, 항목을 다 끝내면 정상.
+     * 완료할 때마다 점이 다음 점으로 한 칸씩 올라가요. (로드맵 전체 진행률은 roundProgress · 패널 숫자로)
+     */
+    fun climbProgress(round: StudyRound?): Progress {
+        val items = round?.items.orEmpty()
+        if (items.isEmpty()) return Progress(0, 0, 0f, 0)
+        val done = items.count { it.done }
+        return Progress(
+            done = done,
+            total = items.size,
+            rate = done / items.size.toFloat(),
+            remainingMinutes = items.filter { !it.done }.sumOf { it.minutes },
+        )
+    }
+
+    /** 산 위 점 = 이번 구간 항목 (id = "it:{구간 id}:{항목 id}") */
+    fun climbSlots(round: StudyRound?): List<Slot> = round?.items.orEmpty().mapIndexed { i, it ->
+        Slot(
+            id = "it:${round!!.id}:${it.id}",
+            goalId = round.goalId,
+            title = "${i + 1}. ${it.title}",
+            done = it.done,
+            remainingMinutes = if (it.done) 0 else it.minutes,
+        )
+    }
+
     /** 산 진행률: 로드맵 단계 기준 (goalId = null이면 진행 중인 목표 합쳐 보기) */
     fun roundProgress(goals: List<Goal>, rounds: List<StudyRound>, goalId: String?): Progress {
         val p = if (goalId == null) RoadmapProgress.ofAll(goals, rounds)

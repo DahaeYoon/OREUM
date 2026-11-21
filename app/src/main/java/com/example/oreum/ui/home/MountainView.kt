@@ -9,7 +9,6 @@ import android.graphics.LinearGradient
 import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Path
-import android.graphics.PointF
 import android.graphics.RadialGradient
 import android.graphics.RectF
 import android.graphics.Shader
@@ -170,6 +169,27 @@ class MountainView @JvmOverloads constructor(
         }
     }
 
+    /** 완료 연출 전까지 이 진행률로 보여 줘요 (학습 결과 기록을 마친 뒤 release로 채워요) */
+    private var hold: Float? = null
+
+    /** 지금 진행률(progress)에서 멈춰 보여 주기: 진행률이 올라도 길이 아직 채워지지 않아요 */
+    fun hold(progress: Float) {
+        hold = progress
+        animFrom = null
+        invalidate()
+    }
+
+    /** 멈춰 둔 곳부터 지금 진행률까지 노란 길이 채워지며 점이 따라 올라가요 */
+    fun release() {
+        val h = hold ?: return
+        hold = null
+        if (h < state.progress && !reducedMotion) {
+            animFrom = h
+            animStart = System.nanoTime()
+        }
+        invalidate()
+    }
+
     fun setState(newState: State, animateFrom: Float? = null) {
         val old = state
         state = newState
@@ -178,7 +198,7 @@ class MountainView @JvmOverloads constructor(
             boxY = newBoxY
             updateBaseMatrix()
         }
-        if (animateFrom != null && animateFrom < newState.progress && !reducedMotion && old != newState) {
+        if (hold == null && animateFrom != null && animateFrom < newState.progress && !reducedMotion && old != newState) {
             animFrom = animateFrom
             animStart = System.nanoTime()
         }
@@ -291,9 +311,9 @@ class MountainView @JvmOverloads constructor(
 
     private fun drawTrail(c: Canvas, now: Float) {
         val st = state
-        val p = st.progress.coerceIn(0f, 1f)
+        val p = (hold ?: st.progress).coerceIn(0f, 1f)
         val ts = styleOf(st.order)
-        val qa = animFrom
+        val qa = if (hold != null) null else animFrom
         val animT = if (qa != null) ((System.nanoTime() - animStart) / 1e9f) else 0f
         if (qa != null && animT > 2.8f) animFrom = null
 
@@ -487,7 +507,7 @@ class MountainView @JvmOverloads constructor(
     // ---------- 터치: 둘러보기 · 확대 · 깃발 / 체크포인트 ----------
     private val scaleDetector = ScaleGestureDetector(context, object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
         override fun onScale(detector: ScaleGestureDetector): Boolean {
-            zoom = (zoom * detector.scaleFactor).coerceIn(1f, 1.8f)
+            zoom = (zoom * detector.scaleFactor).coerceIn(homeZoom, homeZoom * 1.8f)
             clampPan()
             invalidate()
             return true
@@ -515,8 +535,8 @@ class MountainView @JvmOverloads constructor(
         }
 
         override fun onDoubleTap(e: MotionEvent): Boolean {
-            if (zoom > 1.05f) animatePan(0f, 0f, 1f)
-            else animatePan(-(e.x - width / 2f) * 0.6f, -(e.y - artHeight() * 0.72f) * 0.6f, 1.6f)
+            if (zoom > homeZoom * 1.05f) resetView()
+            else animatePan(homeX - (e.x - width / 2f) * 0.6f, homeY - (e.y - artHeight() * 0.72f) * 0.6f, homeZoom * 1.6f)
             return true
         }
     })
@@ -528,23 +548,25 @@ class MountainView @JvmOverloads constructor(
         return true
     }
 
+    /** 둘러보기 범위: 맞춰 둔 기본 위치(home)에서 조금만, 확대했으면 그만큼 더 */
     private fun clampPan() {
         val w = width.toFloat()
         val h = artHeight()
-        val limX = (12 + (zoom - 1) * (w / density) * 0.46f) * density
-        // 확대하면 지금 위치(산 아래쪽)까지 끌어올릴 수 있게 위 · 아래로 넉넉히 움직여요
-        val up = (30 * density) + (zoom - 1) * h * 0.6f
-        val down = (24 * density) + (zoom - 1) * h * 0.4f
-        // 지금 위치를 보여 주려고 옮긴 곳은 범위를 넓혀서 허용해요 (산길 아래쪽은 원래 보이는 영역 밖에 있어요)
-        val f = allowPan
-        panX = panX.coerceIn(min(-limX, f?.x ?: 0f), max(limX, f?.x ?: 0f))
-        panY = panY.coerceIn(min(-up, f?.y ?: 0f), max(down, f?.y ?: 0f))
+        val extra = (zoom / homeZoom - 1f).coerceAtLeast(0f)
+        val limX = 12 * density + extra * w * 0.5f
+        val up = 30 * density + extra * h * 0.6f
+        val down = 24 * density + extra * h * 0.6f
+        panX = panX.coerceIn(homeX - limX, homeX + limX)
+        panY = panY.coerceIn(homeY - up, homeY + down)
     }
 
-    /** 지금 위치를 보여 주려고 옮긴 위치 (끌어서 둘러볼 때도 여기까지는 허용) */
-    private var allowPan: PointF? = null
+    // ---------- 보이는 영역에 맞추기 ----------
+    /** 산을 맞춰 둔 기본 위치 · 크기 (frame으로 정해요). 둘러보기 · 확대 · 되돌리기는 여기를 기준으로 해요 */
+    private var homeX = 0f
+    private var homeY = 0f
+    private var homeZoom = 1f
 
-    private fun animatePan(x: Float, y: Float, s: Float, onEnd: (() -> Unit)? = null) {
+    private fun animatePan(x: Float, y: Float, s: Float) {
         panAnimator?.cancel()
         val x0 = panX
         val y0 = panY
@@ -557,74 +579,52 @@ class MountainView @JvmOverloads constructor(
                 zoom = s0 + (s - s0) * f
                 panX = x0 + (x - x0) * f
                 panY = y0 + (y - y0) * f
-                clampPan()
                 invalidate()
             }
-            if (onEnd != null) addListener(object : android.animation.AnimatorListenerAdapter() {
-                override fun onAnimationEnd(animation: android.animation.Animator) = onEnd()
-            })
             start()
         }
     }
 
-    /** 처음 위치 · 크기로 되돌리기 */
-    fun resetView() = animatePan(0f, 0f, 1f) { allowPan = null }
-
-    /** 확대 s · 이동 0일 때 산길 위치(progress)가 화면 어디에 오는지 */
-    private fun screenOf(progress: Float, s: Float): FloatArray {
-        val m = Matrix(baseMatrix).apply { postScale(s, s, width / 2f, artHeight() * 0.72f) }
-        val pt = Trail.at(progress.coerceIn(0f, 1f)).copyOf()
-        m.mapPoints(pt)
-        return pt
-    }
+    /** 맞춰 둔 기본 위치 · 크기로 되돌리기 */
+    fun resetView() = animatePan(homeX, homeY, homeZoom)
 
     /**
-     * 지금 위치가 아래 패널에 가리거나 화면 밖이면, 산을 조금 작게 보여 줘서 지금 위치와 정상이 함께 보이게 해요.
-     * (산길 아래쪽은 원래 보이는 영역 밖에 있어서, 위로 끌어올리기만 하면 정상이 잘려요)
-     * 가리지 않으면 처음 모습(1배) 그대로. visibleBottom = 아래 패널에 가리지 않는 곳의 아래 끝 (이 뷰 기준 px)
+     * 인사말 아래(visibleTop)부터 아래 패널 위(visibleBottom)까지 보이는 곳에 정상 깃발부터 지금 위치까지 들어오게 맞춰요.
+     * - 그림 좌우 밖(빈 곳)은 보이지 않게, 원래 크기(1배)보다 크게 키우지는 않아요.
+     * - 다 들어가지 않으면 지금 위치(아래쪽)를 먼저 보여 줘요. 그 위는 인사말 뒤로 조금 들어갈 수 있어요.
+     * - 패널을 내리고 올릴 때, 진행률이 바뀔 때 다시 불러요.
      */
-    fun ensureVisible(progress: Float, visibleBottom: Float, force: Boolean = false) {
-        if (width == 0 || height == 0 || (!force && zoom > 1.05f)) return
-        // 되돌리기 애니메이션을 먼저 멈춰요 (멈출 때 allowPan을 비우므로, 그 뒤에 새로 정해요)
-        panAnimator?.cancel()
-        val m = 44 * density
-        val p0 = screenOf(progress, 1f)
-        if (p0[0] in m..(width - m) && p0[1] <= visibleBottom - m) {
-            allowPan = null
-            animatePan(0f, 0f, 1f)
-            return
-        }
-        val v = FloatArray(9).also { baseMatrix.getValues(it) }
-        val k = v[Matrix.MSCALE_X]
-        val dot = Trail.at(progress.coerceIn(0f, 1f))
-        // 정상 깃발 끝(그림 단위 y ≈ 100)부터 지금 위치까지 세로로 들어가는 크기. 그림 폭보다 작아지지는 않게
-        val top = 12 * density
-        val minS = (width / (Trail.MW * k)).coerceAtMost(1f)
-        val sc = ((visibleBottom - m - top) / ((dot[1] - FLAG_TOP_Y) * k)).coerceIn(minS, 1f)
-        // 가로: 그림 밖(빈 곳)이 보이지 않는 범위에서 지금 위치가 왼쪽 30%쯤에 오게
-        val viewW = width / (k * sc)
-        val left = (dot[0] - viewW * 0.3f).coerceIn(0f, max(0f, Trail.MW - viewW))
-        val mm = Matrix(baseMatrix).apply { postScale(sc, sc, width / 2f, artHeight() * 0.72f) }
-        val pts = floatArrayOf(left, dot[1])
-        mm.mapPoints(pts)
-        val tx = -pts[0]
-        val ty = visibleBottom - m - pts[1]
-        allowPan = PointF(tx, ty)
-        animatePan(tx, ty, sc)
-    }
-
-    /**
-     * 지금 위치(progress)를 확대해서 보여 줘요 (완료할 때 점이 움직이는 모습이 잘 보이도록).
-     * visibleBottom = 아래 패널에 가리지 않는 곳의 아래 끝 (이 뷰 기준 px). 점이 그 위 가운데쯤 와요.
-     */
-    fun focusOn(progress: Float, visibleBottom: Float, scale: Float = 1.7f) {
+    fun frame(progress: Float, visibleTop: Float, visibleBottom: Float, animate: Boolean = true) {
         if (width == 0 || height == 0) return
-        val pt = screenOf(progress, scale)
-        val tx = width / 2f - pt[0]
-        val ty = visibleBottom * 0.58f - pt[1]
-        panAnimator?.cancel()
-        allowPan = PointF(tx, ty)
-        animatePan(tx, ty, scale)
+        val k = FloatArray(9).also { baseMatrix.getValues(it) }[Matrix.MSCALE_X]
+        if (k <= 0f) return
+        val dot = Trail.at(progress.coerceIn(0f, 1f))
+        val top = FLAG_TOP_Y - 14f
+        // 아래 끝: 지금 위치 조금 아래 (산 그림 아래 끝보다 더 내려가지는 않게)
+        val bottom = min(Trail.MH + 8f, max(dot[1] + 60f, 560f))
+        val avail = max(visibleBottom - visibleTop, height * 0.3f)
+        // 화면 px / 그림 1단위: 세로로 다 들어가는 크기, 단 그림 폭보다 작게(빈 곳 보임) · 1배보다 크게는 안 함
+        val e = (avail / (bottom - top)).coerceIn(min(width / Trail.MW, k), k)
+        val s = e / k
+        val viewW = width / e
+        val summit = Trail.at(1f)
+        val cx = (min(dot[0], summit[0]) + max(dot[0], summit[0] + 60f)) / 2f
+        val left = (cx - viewW / 2f).coerceIn(0f, max(0f, Trail.MW - viewW))
+        val m = Matrix(baseMatrix).apply { postScale(s, s, width / 2f, artHeight() * 0.72f) }
+        val pt = floatArrayOf(left, bottom)
+        m.mapPoints(pt)
+        homeX = -pt[0]
+        homeY = visibleBottom - pt[1]
+        homeZoom = s
+        if (animate) {
+            animatePan(homeX, homeY, homeZoom)
+        } else {
+            panAnimator?.cancel()
+            panX = homeX
+            panY = homeY
+            zoom = homeZoom
+            invalidate()
+        }
     }
 
     private fun hitTest(sx: Float, sy: Float) {
