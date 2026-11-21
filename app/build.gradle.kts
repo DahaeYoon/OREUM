@@ -56,6 +56,11 @@ dependencies {
     implementation(libs.firebase.auth)
     // 2번: Cloud Firestore (계정별 목표 · 구간 · 학습 기록 저장)
     implementation(libs.firebase.firestore)
+    // 3번: Firebase AI Logic (Gemini Developer API) · App Check
+    implementation(libs.firebase.ai)
+    implementation(libs.firebase.appcheck.playintegrity)
+    // 에뮬레이터 테스트용 App Check 디버그 토큰 (debug 빌드에만 들어가요)
+    debugImplementation(libs.firebase.appcheck.debug)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
