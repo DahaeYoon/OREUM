@@ -43,6 +43,17 @@ com.example.oreum
 └─ util/
 ```
 
+## 사용 기술
+
+| 분야 | 기술 |
+|---|---|
+| 앱 | Kotlin, XML Layout + ViewBinding, Navigation Component, MVVM + Repository |
+| 로그인 | Firebase Authentication (이메일 · 비밀번호, 비밀번호 재설정) |
+| 데이터 저장 | Cloud Firestore (계정별 목표 · 구간 · 학습 기록) |
+| AI | Firebase AI Logic (Google Gemini), JSON 응답 형식 지정 · 앱에서 검사 · 보정 |
+| 보안 | Firebase App Check (release: Play Integrity, debug: 디버그 토큰) |
+| 진행률 · 시간 계산 | Kotlin (로드맵 진행률, 구간 기준 계획, 학습 시간 집계) |
+
 ## 개발 단계 (1차 범위)
 
 하단 탭: 홈 · 목표 · 기록 · 마이
