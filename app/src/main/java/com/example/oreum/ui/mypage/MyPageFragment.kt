@@ -1,6 +1,8 @@
 package com.example.oreum.ui.mypage
 
 import android.graphics.drawable.GradientDrawable
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AlertDialog
@@ -11,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
+import com.example.oreum.AppCheckSetup
 import com.example.oreum.R
 import com.example.oreum.data.repository.AuthRepository
 import com.example.oreum.data.repository.AuthRepositoryProvider
@@ -105,11 +108,20 @@ class MyPageFragment : Fragment(R.layout.fragment_mypage) {
 
     /** 오름 소개: 앱 설명 · AI 사용 안내 · 버전 */
     private fun showAbout() {
-        MaterialAlertDialogBuilder(requireContext())
+        val builder = MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.mypage_about_title)
             .setMessage(getString(R.string.mypage_about_body, versionName()))
             .setPositiveButton(R.string.dialog_close, null)
-            .show()
+        // 테스트용(debug) 앱에만: 이 기기의 AI 테스트 등록 코드(App Check 디버그 토큰) 복사
+        val token = AppCheckSetup.debugToken(requireContext())
+        if (token != null) {
+            builder.setNeutralButton(R.string.mypage_copy_device_code) { _, _ ->
+                val cm = requireContext().getSystemService(ClipboardManager::class.java)
+                cm.setPrimaryClip(ClipData.newPlainText("OREUM device code", token))
+                requireActivity().showToast(R.string.toast_device_code_copied)
+            }
+        }
+        builder.show()
     }
 
     private fun versionName(): String = runCatching {

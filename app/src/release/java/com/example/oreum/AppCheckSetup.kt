@@ -1,5 +1,6 @@
 package com.example.oreum
 
+import android.content.Context
 import com.google.firebase.appcheck.FirebaseAppCheck
 import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 
@@ -8,4 +9,8 @@ object AppCheckSetup {
     fun install() {
         FirebaseAppCheck.getInstance().installAppCheckProviderFactory(PlayIntegrityAppCheckProviderFactory.getInstance())
     }
+
+    /** release 빌드에는 디버그 토큰이 없어요 */
+    @Suppress("UNUSED_PARAMETER")
+    fun debugToken(context: Context): String? = null
 }

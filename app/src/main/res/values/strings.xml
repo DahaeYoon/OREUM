@@ -27,6 +27,9 @@
     <string name="find_password_sending">보내는 중…</string>
     <string name="toast_find_password_sent">가입한 이메일이라면 재설정 링크를 보냈어요. 메일함(스팸함도)을 확인해 주세요</string>
     <string name="dialog_close">닫기</string>
+    <string name="date_pick_start">시작일을 골라 주세요</string>
+    <string name="date_pick_due">마감일을 골라 주세요</string>
+    <string name="date_pick_ok">선택</string>
 
     <!-- STEP 1 · 회원가입 -->
     <string name="signup_button">가입하기</string>
@@ -351,6 +354,8 @@
     <string name="mypage_version">버전</string>
     <string name="mypage_about">오름 소개</string>
     <string name="mypage_about_title">오름 · OREUM</string>
+    <string name="mypage_copy_device_code">AI 테스트 코드 복사</string>
+    <string name="toast_device_code_copied">AI 테스트 코드를 복사했어요. 앱 담당자에게 보내 주세요</string>
     <string name="mypage_about_body">목표를 산으로, 공부를 등산로로 보여 주는 적응형 학습 코칭 앱이에요.\n\n· AI(Google Gemini)가 목표에 맞는 로드맵과 구간 계획을 만들고, 구간 결과를 분석해 다음 구간을 추천해요.\n· AI 계획은 내가 확인하고 승인해야만 적용돼요.\n· 학습 기록은 내 계정에만 저장돼요.\n\n버전 %1$s</string>
     <string name="mypage_logout_title">로그아웃할까요?</string>
     <string name="mypage_logout_body">다시 로그인하면 이어서 사용할 수 있어요.</string>

@@ -19,6 +19,9 @@ import com.example.oreum.ui.common.GlassSheetFragment
 import com.example.oreum.util.DateText
 import com.example.oreum.util.onChildClick
 import com.example.oreum.util.selectChild
+import androidx.annotation.StringRes
+import com.google.android.material.datepicker.CalendarConstraints
+import com.google.android.material.datepicker.DateValidatorPointForward
 import com.google.android.material.datepicker.MaterialDatePicker
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -64,8 +67,13 @@ class GoalFormFragment : GlassSheetFragment() {
         binding.btnWeekendMinus.setOnClickListener { viewModel.changeWeekend(-STEP_MINUTES) }
         binding.btnWeekendPlus.setOnClickListener { viewModel.changeWeekend(STEP_MINUTES) }
 
-        binding.btnStart.setOnClickListener { pickDate(viewModel.uiState.value.startDate) { viewModel.setStartDate(it) } }
-        binding.btnDue.setOnClickListener { pickDate(viewModel.uiState.value.dueDate) { viewModel.setDueDate(it) } }
+        binding.btnStart.setOnClickListener {
+            pickDate(R.string.date_pick_start, viewModel.uiState.value.startDate) { viewModel.setStartDate(it) }
+        }
+        binding.btnDue.setOnClickListener {
+            // 마감일은 시작일 이후만 고를 수 있어요
+            pickDate(R.string.date_pick_due, viewModel.uiState.value.dueDate, from = viewModel.uiState.value.startDate) { viewModel.setDueDate(it) }
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -108,10 +116,27 @@ class GoalFormFragment : GlassSheetFragment() {
         }
     }
 
-    /** MaterialDatePicker는 UTC 자정 기준 millis를 써요. */
-    private fun pickDate(current: LocalDate, onPicked: (LocalDate) -> Unit) {
+    /**
+     * 날짜 선택 (앱 디자인에 맞춘 달력). from이 있으면 그날 이후만 고를 수 있어요.
+     * MaterialDatePicker는 UTC 자정 기준 millis를 써요.
+     */
+    private fun pickDate(@StringRes title: Int, current: LocalDate, from: LocalDate? = null, onPicked: (LocalDate) -> Unit) {
+        fun millis(d: LocalDate) = d.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+        val constraints = CalendarConstraints.Builder().apply {
+            if (from != null) {
+                setStart(millis(from.withDayOfMonth(1)))
+                setValidator(DateValidatorPointForward.from(millis(from)))
+            }
+            // 처음 보여 줄 달 (고를 수 있는 범위 밖이면 범위 첫 달로)
+            setOpenAt(millis(if (from != null && current < from) from else current))
+        }.build()
         val picker = MaterialDatePicker.Builder.datePicker()
-            .setSelection(current.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli())
+            .setTheme(R.style.ThemeOverlay_OREUM_DatePicker)
+            .setTitleText(title)
+            .setPositiveButtonText(R.string.date_pick_ok)
+            .setNegativeButtonText(R.string.study_form_cancel)
+            .setCalendarConstraints(constraints)
+            .setSelection(millis(current))
             .build()
         picker.addOnPositiveButtonClickListener { millis ->
             onPicked(Instant.ofEpochMilli(millis).atZone(ZoneOffset.UTC).toLocalDate())

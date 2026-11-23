@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 아래 탭 글자 (프로토타입): 선택 = 진한 글자, 나머지 = 회색 -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:color="@color/oreum_forest_deep" android:state_checked="true" />
-    <item android:color="@color/oreum_sub_text" />
+    <item android:color="@color/oreum_dark_text" android:state_checked="true" />
+    <item android:color="@color/oreum_ink3" />
 </selector>
