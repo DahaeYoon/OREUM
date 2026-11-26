@@ -73,11 +73,4 @@ com.example.oreum
 
 ---
 
-## AI 코딩 도구 활용
 
-이 프로젝트는 개발 과정에서 AI 코딩 도구(Anthropic Claude)를 활용했습니다.
-
-- **직접 한 일**: 앱 기획과 1차 · 2차 개발 범위 결정, 프로토타입을 바탕으로 한 화면 · 흐름 설계, 기능 요구사항과 수정 사항 결정, Firebase(Authentication · Firestore · AI Logic · App Check) 프로젝트 설정, 에뮬레이터 실행 테스트와 피드백, 변경 내용 검토와 병합
-- **AI 도구로 도움받은 일**: 코드 초안 작성과 수정, 빌드 오류 원인 분석, 문서 정리
-
-앱 안에서 학습 계획을 만드는 AI 기능(Google Gemini)과는 별개입니다.
