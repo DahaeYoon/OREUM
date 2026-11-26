@@ -32,6 +32,9 @@
 
     <TextView
         android:id="@+id/text_ai_title"
+        android:breakStrategy="balanced"
+        android:lineBreakWordStyle="phrase"
+        tools:targetApi="33"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="14dp"
@@ -43,6 +46,9 @@
 
     <TextView
         android:id="@+id/text_ai_body"
+        android:breakStrategy="balanced"
+        android:lineBreakWordStyle="phrase"
+        tools:targetApi="33"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
