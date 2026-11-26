@@ -68,7 +68,7 @@ class RoundDetailSheet : ListSheet() {
             setSpan(ForegroundColorSpan(color(R.color.oreum_ink3)), s, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         }
         kpis.addView(kpi(getString(R.string.round_detail_time), time), LinearLayout.LayoutParams(0, -2, 1f).apply { marginStart = dp(6) })
-        kpis.addView(kpi(getString(R.string.round_log_diff), r.result?.takeIf { done }?.difficulty?.label ?: "-"), LinearLayout.LayoutParams(0, -2, 1f).apply { marginStart = dp(6) })
+        kpis.addView(kpi(getString(R.string.round_detail_difficulty), r.result?.takeIf { done }?.difficulty?.label ?: "-"), LinearLayout.LayoutParams(0, -2, 1f).apply { marginStart = dp(6) })
         list.addView(kpis, fill())
 
         // 항목

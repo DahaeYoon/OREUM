@@ -40,36 +40,38 @@
             </FrameLayout>
         </FrameLayout>
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/text_title"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
             android:layout_weight="1"
-            android:orientation="vertical">
+            android:layout_marginStart="6dp"
+            android:layout_height="wrap_content"
+            android:textColor="@color/oreum_dark_text"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            tools:text="인덱스 · B+트리 정리" />
+    </LinearLayout>
 
-            <TextView
-                android:id="@+id/text_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:maxLines="2"
-                android:textColor="@color/oreum_dark_text"
-                android:textSize="13sp"
-                android:textStyle="bold"
-                tools:text="인덱스 · B+트리 정리" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/text_planned"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/oreum_ink2"
-                android:textSize="10.5sp"
-                tools:text="계획 1시간 30분" />
-        </LinearLayout>
+        <TextView
+            android:id="@+id/text_planned"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:textColor="@color/oreum_ink2"
+            android:textSize="12sp"
+            tools:text="예상 소요시간: 25분" />
+
 
         <LinearLayout
-            android:layout_width="108dp"
-            android:layout_height="26dp"
+            android:layout_width="142dp"
+            android:layout_height="40dp"
             android:layout_marginStart="6dp"
             android:background="@drawable/bg_stepper"
             android:gravity="center_vertical"
@@ -77,8 +79,8 @@
 
             <TextView
                 android:id="@+id/btn_minus"
-                android:layout_width="26dp"
-                android:layout_height="26dp"
+                android:layout_width="36dp"
+                android:layout_height="match_parent"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/item_minus"
                 android:gravity="center"
@@ -89,7 +91,9 @@
             <TextView
                 android:id="@+id/text_minutes"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
                 android:layout_weight="1"
                 android:gravity="center"
                 android:maxLines="1"
@@ -100,8 +104,8 @@
 
             <TextView
                 android:id="@+id/btn_plus"
-                android:layout_width="26dp"
-                android:layout_height="26dp"
+                android:layout_width="36dp"
+                android:layout_height="match_parent"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/item_plus"
                 android:gravity="center"

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 구간 학습 결과 기록 (프로토타입 roundLogSheet · 1차)
-     요약(오늘 · 누적 / 예상 · 완료 수) · 미완료 경고 한 줄 · 항목별 체크/오늘 시간/못 끝낸 이유 · 체감 난이도 · 한 줄 메모 · 오늘 기록 저장 / 구간 결과 제출 -->
+     요약(오늘 / 예상 · 완료 수) · 미완료 경고 한 줄 · 항목별 체크/오늘 시간/못 끝낸 이유 · 체감 난이도 · 한 줄 메모 · 오늘 기록 저장 / 구간 결과 제출 -->
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -64,7 +64,7 @@
                     android:layout_weight="1"
                     android:textColor="@color/oreum_ink2"
                     android:textSize="12sp"
-                    tools:text="오늘 20분 · 이 구간 누적 20분 / 예상 1시간 50분" />
+                    tools:text="오늘 1시간 35분/ 예상 2시간" />
 
                 <TextView
                     android:id="@+id/text_count"
@@ -74,7 +74,7 @@
                     android:textColor="@color/oreum_dark_text"
                     android:textSize="15sp"
                     android:textStyle="bold"
-                    tools:text="1/4" />
+                    tools:text="4개 중 1개 완료" />
             </LinearLayout>
 
             <com.google.android.material.progressindicator.LinearProgressIndicator

@@ -37,6 +37,27 @@ object HomeMountain {
         val top: Boolean get() = total > 0 && rate >= 1f
     }
 
+    data class Display(
+        val roadmapProgress: Progress,
+        val trailProgress: Progress,
+        val slots: List<Slot>,
+    )
+
+    /** 전체 보기의 산은 진행 중인 로드맵을 모아 보여 주고, 개별 산은 이번 구간을 보여 줘요. */
+    fun display(
+        goals: List<Goal>,
+        rounds: List<StudyRound>,
+        goalId: String?,
+        round: StudyRound?,
+    ): Display {
+        val roadmap = roundProgress(goals, rounds, goalId)
+        return if (goalId == null) {
+            Display(roadmap, roadmap, roundSlots(goals, rounds, null))
+        } else {
+            Display(roadmap, climbProgress(round), climbSlots(round))
+        }
+    }
+
     /**
      * 홈 산 = 이번 구간: 항목 하나 = 산 위 점 하나, 항목을 다 끝내면 정상.
      * 완료할 때마다 점이 다음 점으로 한 칸씩 올라가요. (로드맵 전체 진행률은 roundProgress · 패널 숫자로)

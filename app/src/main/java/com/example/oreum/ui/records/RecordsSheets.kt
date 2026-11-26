@@ -106,7 +106,7 @@ class RecordsDaySheet : ListSheet() {
                 ellipsize = TextUtils.TruncateAt.END
             })
             texts.addView(
-                text(getString(R.string.records_day_item_cap, goals[s.goalId]?.title.orEmpty(), r?.no ?: 0), 12f, color(R.color.oreum_ink3)),
+                text(getString(R.string.records_day_item_cap, goals[s.goalId]?.title.orEmpty(), r?.no ?: 0), 13f, color(R.color.oreum_ink2)),
                 fill(2),
             )
             row.addView(texts, LinearLayout.LayoutParams(0, -2, 1f))

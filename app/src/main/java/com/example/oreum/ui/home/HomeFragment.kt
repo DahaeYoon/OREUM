@@ -9,6 +9,7 @@ import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.view.View
 import android.view.animation.PathInterpolator
+import android.widget.LinearLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.doOnLayout
@@ -24,6 +25,7 @@ import com.example.oreum.R
 import com.example.oreum.data.model.RoundStatus
 import com.example.oreum.data.model.TrailOrder
 import com.example.oreum.databinding.FragmentHomeBinding
+import com.example.oreum.databinding.ItemHomeNextCardBinding
 import com.example.oreum.data.repository.AiRequests
 import com.example.oreum.data.repository.StudyRepositoryProvider
 import com.example.oreum.ui.common.GlassBackdrop
@@ -44,7 +46,7 @@ import com.example.oreum.util.showToast
 
 /**
  * 홈 (1차): 산과 이번 구간을 한 화면에
- * - 뒤: 계절 산 (트랙 · 체크포인트 = 로드맵 단계 · 지금 위치 · 정상 깃발). 항목을 끝내면 점이 트랙을 따라 올라가요.
+ * - 뒤: 계절 산 (전체 로드맵 단계 또는 개별 목표의 이번 구간 항목 · 지금 위치 · 정상 깃발).
  * - 위: 날짜 · 인사말
  * - 아래 패널: 산 고르기 · 마감 / 다음 할 일 카드 / 항목 모두 보기 / 로드맵 진행률
  */
@@ -116,12 +118,20 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
         childFragmentManager.registerFragmentLifecycleCallbacks(sheetWatcher, false)
         binding.btnRoundAll.setOnClickListener {
-            val r = lastState?.round ?: return@setOnClickListener
-            HomeRoundSheet.newInstance(r.id).show(childFragmentManager, HomeRoundSheet.TAG)
+            val state = lastState ?: return@setOnClickListener
+            val sheet = if (state.goal == null) {
+                HomeRoundSheet.combined()
+            } else {
+                val round = state.round ?: return@setOnClickListener
+                HomeRoundSheet.newInstance(round.id)
+            }
+            sheet.show(childFragmentManager, HomeRoundSheet.TAG)
         }
 
         // 유리 카드: 뒤의 산을 흐리게 비춰요
+        binding.nextCardsScroll.maxHeightPx = dp(168)
         binding.root.doOnLayout {
+            binding.nextCardsScroll.maxHeightPx = minOf(dp(168), it.height * 2 / 5)
             captureBackdrop()
             binding.btnGoal.doOnLayout { binding.textGoal.maxWidth = binding.btnGoal.width - binding.btnGoal.paddingLeft - binding.btnGoal.paddingRight }
         }
@@ -135,6 +145,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun render(state: HomeUiState) {
         if (!state.loaded) return
+        val previous = lastState
         lastState = state
         showSummitIfPending()
         val today = LocalDate.now()
@@ -142,24 +153,16 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         binding.textDate.text = today.format(DATE_FORMAT)
         binding.textGreeting.text = getString(R.string.home_greeting, state.nickname.ifBlank { getString(R.string.home_default_name) })
 
-        // 산: 체크포인트 = 로드맵 단계
         binding.mountain.setState(
             MountainView.State(
                 progress = state.climb.rate,
                 slots = state.slots,
                 top = state.goal != null && state.progress.top,
                 order = TrailOrder.PLAN_DATE,
+                combinedGoals = state.goal == null,
             ),
             animateFrom = viewModel.takeAnimateFrom(),
         )
-        // 인사말 아래 ~ 패널 위에 정상부터 지금 위치까지 들어오게 산을 맞춰요 (진행률이 바뀔 때마다)
-        val rate = state.climb.rate
-        if (rate != lastShownRate) {
-            val first = lastShownRate == null
-            lastShownRate = rate
-            binding.mountain.post { if (_binding != null) frameMountain(animate = !first) }
-        }
-
         // 산 고르기 · 마감
         binding.textGoal.text = state.goal?.title ?: getString(R.string.home_all_goals)
         val due = state.focusGoal?.takeIf { it.completedAt == null }
@@ -172,15 +175,30 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             binding.chipDday.setTextColor(if (hot) 0xFFB5492E.toInt() else 0xFF3E8E7A.toInt())
         }
 
-        renderNext(state)
+        val combined = state.goal == null
+        val cardsChanged = previous?.nextCards != state.nextCards
+        if (cardsChanged) renderNextCards(state.nextCards)
+        if (previous?.goal?.id != state.goal?.id) binding.nextCardsScroll.scrollTo(0, 0)
 
-        // 항목 모두 보기 (지금 구간이 있을 때)
+        // 전체 보기에서는 각 목표의 이번 구간 항목을 한 곳에 모아요.
         val r = state.round
-        binding.rowRoundActs.isVisible = r != null
-        if (r != null) binding.btnRoundAll.text = getString(R.string.home_round_all, r.items.size)
+        val itemCount = if (combined) state.roundGroups.sumOf { it.round.items.size } else r?.items?.size ?: 0
+        binding.btnRoundAll.isVisible = if (combined) itemCount > 0 else r != null
+        binding.btnRoundAll.text = getString(if (combined) R.string.home_round_all_combined else R.string.home_round_all, itemCount)
         // 학습 결과 기록: 진행 중이고 아직 남은 항목이 있을 때
-        binding.btnRoundLog.isVisible = r != null && r.status == RoundStatus.ACTIVE && !r.allDone
-        if (r != null) binding.btnRoundLog.setOnClickListener { openLog(r.id, submit = false) }
+        val recordable = state.roundGroups.filter { it.round.status == RoundStatus.ACTIVE }
+        binding.btnRoundLog.isVisible = if (combined) recordable.isNotEmpty()
+            else r != null && r.status == RoundStatus.ACTIVE && !r.allDone
+        binding.btnRoundLog.setOnClickListener {
+            if (combined) {
+                if (childFragmentManager.findFragmentByTag(HomeRecordGoalSheet.TAG) == null) {
+                    HomeRecordGoalSheet().show(childFragmentManager, HomeRecordGoalSheet.TAG)
+                }
+            } else if (r != null) {
+                openLog(r.id, submit = false)
+            }
+        }
+        binding.rowRoundActs.isVisible = binding.btnRoundAll.isVisible || binding.btnRoundLog.isVisible
 
         // 로드맵 진행률: 단계 k/n · %
         val pct = state.progress.percent
@@ -195,14 +213,32 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             append(" · $pct%")
         }
 
+        // 카드 수나 진행률이 바뀌면 패널 위에 산의 현재 위치가 보이도록 맞춰요.
+        val rate = state.climb.rate
+        if (rate != lastShownRate || cardsChanged) {
+            val first = lastShownRate == null
+            lastShownRate = rate
+            binding.panel.doOnLayout { if (_binding != null) frameMountain(animate = !first) }
+        }
         binding.mountain.post { captureBackdrop() }
     }
 
-    private fun renderNext(state: HomeUiState) {
-        val card = binding.cardNext
-        card.setBackgroundResource(if (state.next is NextCard.Top) R.drawable.bg_home_next_card_top else R.drawable.bg_home_next_card)
+    private fun renderNextCards(cards: List<GoalNextCard>) {
+        val list = binding.nextCards
+        list.removeAllViews()
+        cards.forEachIndexed { index, card ->
+            val item = ItemHomeNextCardBinding.inflate(layoutInflater, list, false)
+            val params = item.root.layoutParams as LinearLayout.LayoutParams
+            if (index > 0) params.topMargin = dp(8)
+            renderNext(item, card)
+            list.addView(item.root)
+        }
+    }
+
+    private fun renderNext(binding: ItemHomeNextCardBinding, card: GoalNextCard) {
+        binding.root.setBackgroundResource(if (card.next is NextCard.Top) R.drawable.bg_home_next_card_top else R.drawable.bg_home_next_card)
         val btn = binding.btnNext
-        when (val n = state.next) {
+        when (val n = card.next) {
             is NextCard.Next -> {
                 binding.textNextLabel.text = getString(R.string.home_round_label, n.round.no, n.round.doneCount, n.round.items.size)
                 binding.textNextTitle.text = n.item.title.removeSuffix(" (이어서)")
@@ -213,8 +249,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             }
             is NextCard.Ready -> {
                 binding.textNextLabel.text = getString(R.string.home_round_ready_label, n.round.no)
-                binding.textNextTitle.text = n.round.displayTopic
-                binding.textNextCap.text = getString(R.string.home_round_ready_cap, n.goalTitle, n.round.items.size, DateText.minutes(n.round.estimatedMinutes))
+                binding.textNextTitle.text = n.item?.title?.removeSuffix(" (이어서)") ?: n.round.displayTopic
+                binding.textNextCap.text = if (n.item != null) {
+                    getString(R.string.home_next_cap, n.goalTitle, DateText.minutes(n.item.minutes))
+                } else {
+                    getString(R.string.home_round_ready_cap, n.goalTitle, n.round.items.size, DateText.minutes(n.round.estimatedMinutes))
+                }
                 btn.text = getString(R.string.home_btn_start)
                 btn.setIconResource(R.drawable.ic_route)
                 btn.setOnClickListener { startRound(n.round.id) }
@@ -277,6 +317,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 btn.setOnClickListener { navigateSafe(R.id.action_home_to_goalForm) }
             }
         }
+        if (card.goalTitle != null && card.next !is NextCard.Next && card.next !is NextCard.Ready) {
+            binding.textNextLabel.text = getString(R.string.home_next_cap, card.goalTitle, binding.textNextLabel.text)
+        }
     }
 
     // ---------- 동작 ----------
@@ -308,6 +351,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun replayTick() {
         val r = pendingTick ?: return
         pendingTick = null
+        if (r.displayedGoalId != viewModel.uiState.value.goal?.id) {
+            binding.mountain.release(animate = false)
+            return
+        }
         ticking = true
         // 홈 화면이 새로 만들어졌을 수도 있어서, 연출 시작점(완료 전 진행률)을 다시 잡아 둬요
         binding.mountain.hold(r.before)
@@ -447,10 +494,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         val target = if (fold) (binding.panel.height - dp(74)).toFloat() else 0f
         animateY(panel, target)
         binding.iconGrabClimb.animate().rotation(if (fold) 180f else 0f).setDuration(320).start()
-        listOf(binding.cardNext, binding.rowRoundActs, binding.trackProgress.parent as View).forEach {
+        listOf(binding.nextCardsScroll, binding.rowRoundActs, binding.trackProgress.parent as View).forEach {
             it.animate().alpha(if (fold) 0f else 1f).setDuration(250).start()
         }
-        binding.cardNext.isEnabled = !fold
+        binding.nextCardsScroll.importantForAccessibility =
+            if (fold) View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS else View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
         // 보이는 곳이 넓어지거나 좁아졌으니 산을 다시 맞춰요 (내리면 빈 곳 없이 크게, 올리면 다시 패널 위로)
         frameMountain()
     }
@@ -493,6 +541,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     override fun onDestroyView() {
         childFragmentManager.unregisterFragmentLifecycleCallbacks(sheetWatcher)
+        lastState = null
         _binding = null
         backdrop = null
         super.onDestroyView()

@@ -54,6 +54,7 @@ class MountainView @JvmOverloads constructor(
         val slots: List<HomeMountain.Slot> = emptyList(),
         val top: Boolean = false,
         val order: TrailOrder = TrailOrder.PLAN_DATE,
+        val combinedGoals: Boolean = false,
     )
 
     /** 깃발을 눌렀을 때 */
@@ -180,10 +181,10 @@ class MountainView @JvmOverloads constructor(
     }
 
     /** 멈춰 둔 곳부터 지금 진행률까지 노란 길이 채워지며 점이 따라 올라가요 */
-    fun release() {
+    fun release(animate: Boolean = true) {
         val h = hold ?: return
         hold = null
-        if (h < state.progress && !reducedMotion) {
+        if (animate && h < state.progress && !reducedMotion) {
             animFrom = h
             animStart = System.nanoTime()
         }
@@ -355,14 +356,14 @@ class MountainView @JvmOverloads constructor(
         // 체크포인트: 완료 = 흰 동그라미 체크, 남은 곳 = 반투명 흰 링
         val cps = st.slots.size
         if (cps > 0) {
-            val step = max(1, ceil((cps - 1) / 12f).toInt())
+            val step = checkpointStep(cps)
             val cur = (p * cps).roundToInt()
             for (k in 1 until cps) {
                 if (k % step != 0 && k != cur) continue
                 val t = k.toFloat() / cps
                 val (x, y) = Trail.at(t).let { it[0] to it[1] }
                 val r = 8.5f + Trail.roadWidth(y) * 0.15f
-                if (t <= p + 1e-6f) {
+                if (isCheckpointDone(st, k, p)) {
                     fillPaint.color = 0xEBFFFFFF.toInt()
                     c.drawCircle(x, y, r * 1.05f, fillPaint)
                     linePaint.color = 0xFF5BAE92.toInt()
@@ -403,7 +404,7 @@ class MountainView @JvmOverloads constructor(
 
             // '다음 할 일' 이름표 (지금 위치 바로 옆)
             val nextK = cur + 1
-            if (nextK in 1..cps && !st.slots[nextK - 1].done) {
+            if (!st.combinedGoals && nextK in 1..cps && !st.slots[nextK - 1].done) {
                 val (x, y) = Trail.at(p).let { it[0] to it[1] }
                 val h = 32f
                 val w = 90f
@@ -422,6 +423,12 @@ class MountainView @JvmOverloads constructor(
 
         }
     }
+
+    private fun checkpointStep(count: Int): Int = max(1, ceil((count - 1) / 12f).toInt())
+
+    private fun isCheckpointDone(state: State, checkpoint: Int, progress: Float): Boolean =
+        if (state.combinedGoals) state.slots[checkpoint - 1].done
+        else checkpoint.toFloat() / state.slots.size <= progress + 1e-6f
 
     /** a → b 구간을 길이에 맞춰 일정한 속도로 따라가는 위치 (k = 0 ~ 1) */
     private fun along(a: Float, b: Float, k: Float): FloatArray {
@@ -640,10 +647,12 @@ class MountainView @JvmOverloads constructor(
         }
         // 완료한 체크포인트
         val cps = state.slots.size
-        val p = state.progress
+        val p = (hold ?: state.progress).coerceIn(0f, 1f)
+        val step = checkpointStep(cps)
+        val current = (p * cps).roundToInt()
         for (k in 1 until cps) {
+            if ((k % step != 0 && k != current) || !isCheckpointDone(state, k, p)) continue
             val t = k.toFloat() / cps
-            if (t > p + 1e-6f) continue
             val c = Trail.at(t)
             val r = (8.5f + Trail.roadWidth(c[1]) * 0.15f) * 2.2f
             if (hypot(x - c[0], y - c[1]) <= r) {

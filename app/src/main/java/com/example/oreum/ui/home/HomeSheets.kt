@@ -14,8 +14,10 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.ColorInt
+import androidx.core.view.ViewCompat
 import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -169,6 +171,76 @@ class HomeGoalSheet : HomeListSheet() {
     }
 }
 
+/** 학습 결과를 기록할 목표 선택. 홈의 목표 선택창과 같은 유리 카드 목록을 사용해요. */
+class HomeRecordGoalSheet : HomeListSheet() {
+
+    private val viewModel: HomeViewModel by viewModels(ownerProducer = { requireParentFragment() })
+    private var openingRecord = false
+
+    override fun build() {
+        binding.textTitle.setText(R.string.home_record_goal)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    if (state.loaded) {
+                        render(state.roundGroups.filter { it.round.status == RoundStatus.ACTIVE })
+                    }
+                }
+            }
+        }
+    }
+
+    private fun render(groups: List<HomeRoundGroup>) {
+        binding.list.removeAllViews()
+        if (groups.isEmpty()) {
+            dismissAllowingStateLoss()
+            return
+        }
+        groups.forEachIndexed { index, group ->
+            val round = group.round
+            val card = LinearLayout(requireContext()).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                minimumHeight = dp(72)
+                setPadding(dp(14), dp(12), dp(14), dp(12))
+                setBackgroundResource(R.drawable.bg_home_goal_opt)
+                isFocusable = true
+                setOnClickListener {
+                    if (openingRecord) return@setOnClickListener
+                    val current = repository.round(round.id) ?: return@setOnClickListener
+                    if (current.status != RoundStatus.ACTIVE || current.items.isEmpty()) return@setOnClickListener
+                    val host = home ?: return@setOnClickListener
+                    openingRecord = true
+                    dismiss()
+                    host.openLog(current.id, submit = false)
+                }
+            }
+            val labels = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL }
+            labels.addView(text(group.goalTitle, 16f, color(R.color.oreum_dark_text), bold = true).apply {
+                maxLines = 2
+                ellipsize = TextUtils.TruncateAt.END
+            })
+            labels.addView(
+                text(getString(R.string.home_round_label, round.no, round.doneCount, round.items.size),
+                    12f, color(R.color.oreum_ink2)),
+                gapParams(4),
+            )
+            card.addView(labels, LinearLayout.LayoutParams(0, -2, 1f))
+            val icon = ImageView(requireContext()).apply {
+                setImageResource(R.drawable.ic_clock)
+                imageTintList = ColorStateList.valueOf(color(R.color.oreum_forest_mint))
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            }
+            card.addView(icon, LinearLayout.LayoutParams(dp(22), dp(22)).apply { marginStart = dp(12) })
+            binding.list.addView(card, gapParams(if (index == 0) 0 else 8))
+        }
+    }
+
+    companion object {
+        const val TAG = "HomeRecordGoalSheet"
+    }
+}
+
 /** 정상 깃발: 최종 목표 · 마감 · 마친 단계 / 남은 단계 / 남은 학습 */
 class FlagInfoSheet : GlassSheetFragment() {
     private var _binding: SheetHomeFlagBinding? = null
@@ -291,13 +363,42 @@ class SlotInfoSheet : HomeListSheet() {
     }
 }
 
-/** 이번 구간 항목 모두 보기: 홈을 떠나지 않고 체크 (체크하면 뒤의 산에서 점이 올라가요) */
+/** 홈의 이번 구간 항목 목록. 전체 목표를 선택했으면 목표별로 묶어 보여 줘요. */
 class HomeRoundSheet : HomeListSheet() {
 
-    private val roundId get() = requireArguments().getString(ARG_ROUND).orEmpty()
+    private val viewModel: HomeViewModel by viewModels(ownerProducer = { requireParentFragment() })
     private var act: MaterialButton? = null
 
     override fun build() {
+        val roundId = arguments?.getString(ARG_ROUND)
+        if (roundId == null) {
+            buildCombined()
+        } else {
+            buildRound(roundId)
+        }
+    }
+
+    private fun buildCombined() {
+        binding.textTitle.setText(R.string.home_round_combined_title)
+        binding.textCaption.setText(R.string.home_round_combined_empty)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    if (state.loaded) renderCombined(state.roundGroups)
+                }
+            }
+        }
+    }
+
+    private fun renderCombined(groups: List<HomeRoundGroup>) {
+        binding.textCaption.isVisible = groups.isEmpty()
+        binding.list.removeAllViews()
+        groups.forEachIndexed { index, group ->
+            binding.list.addView(itemsCard(group.round, group.goalTitle), gapParams(if (index == 0) 0 else 8))
+        }
+    }
+
+    private fun buildRound(roundId: String) {
         binding.textCaption.isVisible = true
         binding.btnClose.isVisible = false
         binding.rowButtons.isVisible = true
@@ -351,12 +452,25 @@ class HomeRoundSheet : HomeListSheet() {
             }
         }
         binding.textCaption.text = getString(R.string.round_sum, r.doneCount, r.items.size, DateText.minutes(r.estimatedMinutes))
-        val list = binding.list
-        list.removeAllViews()
+        binding.list.removeAllViews()
+        binding.list.addView(itemsCard(r))
+    }
+
+    private fun itemsCard(r: StudyRound, goalTitle: String? = null): LinearLayout {
         val card = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             setBackgroundResource(R.drawable.bg_home_card14)
             setPadding(dp(12), dp(2), dp(12), dp(2))
+        }
+        if (goalTitle != null) {
+            val heading = text(
+                getString(R.string.home_round_combined_heading, goalTitle, r.no),
+                14f, color(R.color.oreum_dark_text), bold = true,
+            ).apply {
+                setPadding(0, dp(10), 0, dp(4))
+                ViewCompat.setAccessibilityHeading(this, true)
+            }
+            card.addView(heading)
         }
         r.items.forEachIndexed { i, item ->
             if (i > 0) card.addView(divider(), LinearLayout.LayoutParams(-1, dp(1)))
@@ -389,19 +503,23 @@ class HomeRoundSheet : HomeListSheet() {
                 }, LinearLayout.LayoutParams(-2, -2).apply { marginStart = dp(4); marginEnd = dp(6) })
             }
             row.addView(text(item.title.removeSuffix(" (이어서)"), 14f, color(if (item.done) R.color.oreum_ink3 else R.color.oreum_dark_text), bold = true).apply {
-                maxLines = 1
-                ellipsize = TextUtils.TruncateAt.END
+                if (goalTitle == null) {
+                    maxLines = 1
+                    ellipsize = TextUtils.TruncateAt.END
+                }
                 if (item.done) paintFlags = paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
             }, LinearLayout.LayoutParams(0, -2, 1f).apply { marginStart = dp(4) })
             row.addView(text(DateText.minutes(item.minutes), 12.5f, color(R.color.oreum_ink3)), LinearLayout.LayoutParams(-2, -2).apply { marginStart = dp(8) })
             card.addView(row)
         }
-        list.addView(card)
+        return card
     }
 
     companion object {
         const val TAG = "HomeRoundSheet"
         private const val ARG_ROUND = "roundId"
+
+        fun combined() = HomeRoundSheet()
 
         fun newInstance(roundId: String) = HomeRoundSheet().apply {
             arguments = Bundle().apply { putString(ARG_ROUND, roundId) }

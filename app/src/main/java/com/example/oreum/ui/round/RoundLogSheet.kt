@@ -1,5 +1,7 @@
 package com.example.oreum.ui.round
 
+import android.text.InputType
+import android.widget.EditText
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.SpannableStringBuilder
@@ -73,6 +75,7 @@ class RoundLogSheet : GlassSheetFragment() {
         round = r
         showReasons = requireArguments().getBoolean(ARG_SUBMIT)
         val today = today()
+        val date = LocalDate.ofEpochDay(today)
         val sessions = repository.sessions.value
         r.items.forEach { item ->
             val todayMin = sessions.filter { it.itemId == item.id && it.date == today }.sumOf { it.minutes }
@@ -87,7 +90,7 @@ class RoundLogSheet : GlassSheetFragment() {
         binding.textCaption.text = getString(
             R.string.round_log_caption,
             goal?.title.orEmpty(),
-            DateText.monthDay(LocalDate.ofEpochDay(today)),
+            date.monthValue, date.dayOfMonth,
         )
 
         // 체감 난이도: 쉬움 · 적당 · 어려움
@@ -108,11 +111,10 @@ class RoundLogSheet : GlassSheetFragment() {
     private fun draw() {
         val items = round.items
         val todayTotal = states.values.sumOf { it.minutes }
-        val all = items.sumOf { (before[it.id] ?: 0) + states.getValue(it.id).minutes }
         val est = items.sumOf { it.minutes }
         val doneN = items.count { states.getValue(it.id).done }
 
-        // 오늘 X · 이 구간 누적 Y / 예상 Z      완료 k/n
+        // 오늘 X/ 예상 Y      완료 k/n
         binding.textSum.text = SpannableStringBuilder().apply {
             append(getString(R.string.round_log_today))
             append(" ")
@@ -120,10 +122,10 @@ class RoundLogSheet : GlassSheetFragment() {
             append(DateText.minutes(todayTotal))
             setSpan(StyleSpan(Typeface.BOLD), s, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             setSpan(ForegroundColorSpan(requireContext().getColor(R.color.oreum_dark_text)), s, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            append(getString(R.string.round_log_total, DateText.minutes(all), DateText.minutes(est)))
+            append(getString(R.string.round_log_summary_estimate, DateText.minutes(est)))
         }
-        binding.textCount.text = getString(R.string.round_done_count, doneN, items.size)
-        binding.progress.progress = (all * 100 / maxOf(1, est)).coerceAtMost(100)
+        binding.textCount.text = getString(R.string.round_log_completed_items, doneN, items.size)
+        binding.progress.progress = doneN * 100 / items.size.coerceAtLeast(1)
 
         // 제출하려고 할 때 70% 미만이면 경고 한 줄 (연속 미완료 판단은 2차)
         val miss = showReasons && doneN * 10 < items.size * 7
@@ -141,10 +143,12 @@ class RoundLogSheet : GlassSheetFragment() {
             row.textTitle.text = item.title.removeSuffix(" (이어서)")
             val prev = before[item.id] ?: 0
             row.textPlanned.text = buildString {
-                append(getString(R.string.round_review_est, DateText.minutes(item.minutes)))
+                append(getString(R.string.round_log_item_estimate, DateText.minutes(item.minutes)))
                 if (prev > 0) append(getString(R.string.round_log_prev, DateText.minutes(prev)))
             }
             row.textMinutes.text = DateText.minutes(st.minutes)
+            row.textMinutes.contentDescription = getString(R.string.round_log_edit_action, row.textMinutes.text)
+            row.textMinutes.setOnClickListener { editMinutes(st) }
 
             row.btnCheck.setOnClickListener {
                 st.done = !st.done
@@ -170,6 +174,31 @@ class RoundLogSheet : GlassSheetFragment() {
         }
 
         binding.segDiff.selectChild(difficulty?.let { Difficulty.entries.indexOf(it) } ?: -1)
+    }
+
+    private fun editMinutes(state: RowState) {
+        val input = EditText(requireContext()).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            setSingleLine()
+            setText(state.minutes.toString())
+            selectAll()
+        }
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.round_log_edit_minutes)
+            .setView(input)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
+        dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE).setOnClickListener {
+            val minutes = input.text.toString().toIntOrNull()
+            if (minutes == null || minutes !in 0..600) {
+                input.error = getString(R.string.round_log_minutes_range)
+            } else {
+                state.minutes = minutes
+                dialog.dismiss()
+                if (_binding != null) draw()
+            }
+        }
     }
 
     private fun entries(): List<RoundLogEntry> = round.items.map { item ->

@@ -65,7 +65,7 @@ object RoadmapProgress {
     }
 
     /** 마감까지 끝낼 수 있는지 (1차: 목표 상세의 한 줄 표시용, 시뮬레이션) */
-    enum class FeasLevel(val label: String) { OK("여유 있어요"), TIGHT("빠듯해요"), RISK("어려울 수 있어요"), DONE("완료") }
+    enum class FeasLevel(val label: String) { OK("여유 있어요"), TIGHT("시간이 부족할 수 있어요"), RISK("어려울 수 있어요"), DONE("완료") }
 
     data class Feasibility(
         val level: FeasLevel,

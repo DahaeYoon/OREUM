@@ -1,16 +1,20 @@
 package com.example.oreum.ui.records
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import android.content.Context
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.oreum.data.model.Goal
 import com.example.oreum.data.model.StudyRound
-import com.example.oreum.data.repository.StudyRepository
+import com.example.oreum.data.repository.AuthRepositoryProvider
 import com.example.oreum.data.repository.StudyRepositoryProvider
 import com.example.oreum.domain.usecase.RoundRecords
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import java.time.LocalDate
@@ -33,17 +37,26 @@ data class RecordsUiState(
     val today: Long = 0L,
 )
 
-/** 기록 (1차): 날짜별 · 구간별 목록 + 페이스 카드. 모두 실제 학습 기록(구간 · 학습 시간) 기준이에요. */
-class RecordsViewModel(
-    private val repository: StudyRepository = StudyRepositoryProvider.instance,
-) : ViewModel() {
+data class RecordsStreakUiState(val date: Long, val streak: RoundRecords.Streak)
 
+/** 기록 (1차): 날짜별 · 구간별 목록 + 페이스 카드. 모두 실제 학습 기록(구간 · 학습 시간) 기준이에요. */
+class RecordsViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val repository = StudyRepositoryProvider.instance
+    private val auth = AuthRepositoryProvider.instance
+    private val preferences = application.getSharedPreferences("study_rest_days", Context.MODE_PRIVATE)
     private val selection = MutableStateFlow(RecordsSelection())
+    private val currentDay = MutableStateFlow(LocalDate.now().toEpochDay())
+    private val restDayChanges = MutableStateFlow(0)
+    private val userId = auth.currentUser.map { it?.id }.distinctUntilChanged()
+
+    val streakState = combine(repository.sessions, userId, currentDay, restDayChanges) { sessions, id, today, _ ->
+        id?.let { RecordsStreakUiState(today, RoundRecords.streak(sessions, restDays(it), today)) }
+    }.distinctUntilChanged()
 
     val uiState: StateFlow<RecordsUiState> =
-        combine(repository.goals, repository.rounds, repository.sessions, selection) { goals, rounds, sessions, sel0 ->
+        combine(repository.goals, repository.rounds, repository.sessions, selection, currentDay) { goals, rounds, sessions, sel0, today ->
             val sel = if (sel0.goalId != null && goals.none { it.id == sel0.goalId }) sel0.copy(goalId = null) else sel0
-            val today = LocalDate.now().toEpochDay()
             RecordsUiState(
                 loaded = true,
                 selection = sel,
@@ -55,6 +68,25 @@ class RecordsViewModel(
                 today = today,
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), RecordsUiState())
+
+    private fun restDays(id: String): Set<Long> =
+        preferences.getStringSet(id, emptySet()).orEmpty().mapNotNull { it.toLongOrNull() }.toSet()
+
+    fun refreshDate() {
+        currentDay.value = LocalDate.now().toEpochDay()
+    }
+
+    fun setRestingToday(date: Long, resting: Boolean) {
+        refreshDate()
+        if (date != currentDay.value) return
+        val id = auth.currentUser.value?.id ?: return
+        if (resting && repository.sessions.value.any { it.date == date && it.minutes > 0 }) return
+        val days = restDays(id)
+        val updated = if (resting) days + date else days - date
+        if (updated == days) return
+        preferences.edit().putStringSet(id, updated.map { it.toString() }.toSet()).apply()
+        restDayChanges.update { it + 1 }
+    }
 
     fun setView(view: RecordsView) = selection.update { it.copy(view = view) }
 

@@ -31,6 +31,7 @@ import com.example.oreum.util.applySystemBarsPadding
 import com.example.oreum.util.onChildClick
 import com.example.oreum.util.selectChild
 import com.google.android.material.chip.ChipGroup
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -65,13 +66,35 @@ class RecordsFragment : Fragment(R.layout.fragment_records) {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collect(::render)
+                viewModel.refreshDate()
+                launch { viewModel.uiState.collect(::render) }
+                launch { viewModel.streakState.collect(::renderStreak) }
+                while (true) {
+                    delay(60_000)
+                    viewModel.refreshDate()
+                }
             }
         }
     }
 
     /** 목표 고르기 시트에서 불러요 */
     fun selectGoal(goalId: String?) = viewModel.setGoal(goalId)
+
+    private fun renderStreak(state: RecordsStreakUiState?) {
+        binding.streakCard.isVisible = state != null
+        if (state == null) return
+        val streak = state.streak
+        binding.streakDays.text = getString(R.string.records_days_value, streak.days)
+        binding.streakMessage.setText(when {
+            streak.studiedToday -> R.string.records_streak_studied
+            streak.restingToday -> R.string.records_streak_resting
+            streak.days == 0 -> R.string.records_streak_first
+            else -> R.string.records_streak_hint
+        })
+        binding.btnRestDay.isVisible = !streak.studiedToday || streak.restingToday
+        binding.btnRestDay.setText(if (streak.restingToday) R.string.records_rest_cancel else R.string.records_rest_today)
+        binding.btnRestDay.setOnClickListener { viewModel.setRestingToday(state.date, !streak.restingToday) }
+    }
 
     private fun render(state: RecordsUiState) {
         if (!state.loaded) return
@@ -116,9 +139,12 @@ class RecordsFragment : Fragment(R.layout.fragment_records) {
         val trackH = dp(56)
         week.forEach { (date, min) ->
             val isToday = date == today
+            val day = LocalDate.ofEpochDay(date)
             val col = LinearLayout(requireContext()).apply {
                 orientation = LinearLayout.VERTICAL
                 gravity = Gravity.CENTER_HORIZONTAL
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_YES
+                contentDescription = getString(R.string.records_week_day_time, day.monthValue, day.dayOfMonth, DateText.minutes(min))
             }
             val track = FrameLayout(requireContext())
             val h = if (min > 0) maxOf((trackH * 0.06f).toInt(), (trackH * min.toFloat() / max).toInt()) else (trackH * 0.06f).toInt()
@@ -130,10 +156,11 @@ class RecordsFragment : Fragment(R.layout.fragment_records) {
             }, FrameLayout.LayoutParams(dp(22), h, Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL))
             col.addView(track, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, trackH))
             col.addView(TextView(requireContext()).apply {
-                text = LocalDate.ofEpochDay(date).dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREAN)
-                textSize = 11.5f
+                text = if (isToday) getString(R.string.records_week_today) else day.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREAN)
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                textSize = 13f
                 gravity = Gravity.CENTER
-                setTextColor(color(if (isToday) R.color.oreum_dark_text else R.color.oreum_ink3))
+                setTextColor(color(if (isToday) R.color.oreum_dark_text else R.color.oreum_ink2))
                 if (isToday) setTypeface(typeface, Typeface.BOLD)
             }, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4) })
             bars.addView(col, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f))
@@ -184,10 +211,11 @@ class RecordsFragment : Fragment(R.layout.fragment_records) {
         })
         dateCol.addView(TextView(requireContext()).apply {
             text = getString(R.string.records_day_month, date.monthValue, date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.KOREAN))
-            textSize = 11f
-            setTextColor(color(R.color.oreum_ink3))
+            textSize = 13f
+            setTextColor(color(R.color.oreum_ink2))
         })
-        row.addView(dateCol, LinearLayout.LayoutParams(dp(60), LinearLayout.LayoutParams.WRAP_CONTENT))
+        dateCol.minimumWidth = dp(56)
+        row.addView(dateCol, LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT))
 
         val chips = ChipGroup(requireContext()).apply {
             chipSpacingHorizontal = dp(4)
@@ -222,7 +250,7 @@ class RecordsFragment : Fragment(R.layout.fragment_records) {
     /** 구간별 한 줄: 번호 · 주제 · (목표) · 날짜 · 완료 수 / 진행 중 */
     private fun roundRow(r: StudyRound, state: RecordsUiState, all: Boolean): View {
         val hb = ItemRoundHistoryBinding.inflate(layoutInflater, binding.list, false)
-        hb.textNo.text = getString(R.string.round_badge_two_line, r.no)
+        hb.textNo.text = getString(R.string.round_no, r.no)
         hb.textTopic.text = r.displayTopic
         val first = r.dates.firstOrNull() ?: r.startedOn ?: r.createdOn
         hb.textSub.text = buildString {

@@ -51,6 +51,23 @@ object RoundRecords {
             }
     }
 
+    data class Streak(val days: Int, val studiedToday: Boolean, val restingToday: Boolean)
+
+    /** 실제 학습을 기록한 날짜를 세고, 쉬는 날은 건너뛰어요. */
+    fun streak(sessions: List<StudySession>, restDays: Set<Long>, today: Long): Streak {
+        val studiedDays = sessions.asSequence().filter { it.minutes > 0 }.map { it.date }.toSet()
+        val studiedToday = today in studiedDays
+        val restingToday = today in restDays
+        // 오늘이 아직 지나지 않았으므로, 어제까지 이어 온 기록을 보여 줘요.
+        var date = if (studiedToday || restingToday) today else today - 1
+        var days = 0
+        while (date in studiedDays || date in restDays) {
+            if (date in studiedDays) days++
+            date--
+        }
+        return Streak(days, studiedToday, restingToday)
+    }
+
     /** 최근 7일 (오늘 포함, 오래된 순) 날짜별 공부 시간(분) */
     fun last7(sessions: List<StudySession>, goalId: String?, today: Long): List<Pair<Long, Int>> =
         (6 downTo 0).map { k ->
