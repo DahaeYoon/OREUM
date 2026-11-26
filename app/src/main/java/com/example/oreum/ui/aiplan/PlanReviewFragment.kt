@@ -76,6 +76,7 @@ class PlanReviewFragment : Fragment(R.layout.fragment_plan_review) {
             onRetry = viewModel::retry,
             onLater = ::later,
         )
+        binding.aiStateWrap.isVisible = ai != null
         binding.textEmpty.isVisible = ai == null && (goal == null || draft == null)
         binding.groupDraft.isVisible = goal != null && draft != null
         if (goal == null || draft == null) return

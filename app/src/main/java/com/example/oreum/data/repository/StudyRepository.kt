@@ -30,6 +30,12 @@ interface StudyRepository {
     /** completed = true면 완료한 산(오른 산)으로, false면 다시 진행 중으로 */
     fun setGoalCompleted(id: String, completed: Boolean)
 
+    /** 마감일 늘리기: 다음 구간부터 새 마감일에 맞춰 계획해요 */
+    fun extendDue(goalId: String, newDueAt: Long)
+
+    /** 마감일이 지난 목표를 지금까지 한 만큼으로 마치기 (마감 종료). 승인 전 추천 · 초안은 지워요 */
+    fun finishAtDue(goalId: String)
+
     /** 지금 계정의 데이터를 샘플로 채우기 (마이 → 샘플 데이터 불러오기) */
     fun resetSampleData()
 

@@ -31,7 +31,7 @@ object FirestoreMapper {
         "period" to g.period.name, "startDate" to g.startDate, "dueAt" to g.dueAt, "level" to g.level.name,
         "weekdayMinutes" to g.weekdayMinutes, "weekendMinutes" to g.weekendMinutes, "priority" to g.priority,
         "planStatus" to g.planStatus.name, "roadmap" to g.roadmap.map(::stage), "stage" to g.stage,
-        "completedAt" to g.completedAt, "createdAt" to g.createdAt, "updatedAt" to g.updatedAt,
+        "completedAt" to g.completedAt, "endedAtDue" to g.endedAtDue, "createdAt" to g.createdAt, "updatedAt" to g.updatedAt,
     )
 
     fun stage(s: RoadmapStage): Map<String, Any?> = mapOf("title" to s.title, "topics" to s.topics, "hours" to s.hours)
@@ -80,7 +80,7 @@ object FirestoreMapper {
         dueAt = m.long("dueAt"), level = m.enum("level", GoalLevel.BEGINNER), weekdayMinutes = m.int("weekdayMinutes", 120),
         weekendMinutes = m.int("weekendMinutes", 180), priority = m.int("priority", 2),
         planStatus = m.enum("planStatus", PlanStatus.NONE), roadmap = m.maps("roadmap").map(::toStage),
-        stage = m.int("stage"), completedAt = m.longOrNull("completedAt"), createdAt = m.long("createdAt"),
+        stage = m.int("stage"), completedAt = m.longOrNull("completedAt"), endedAtDue = m["endedAtDue"] as? Boolean ?: false, createdAt = m.long("createdAt"),
         updatedAt = m.long("updatedAt"),
     )
 

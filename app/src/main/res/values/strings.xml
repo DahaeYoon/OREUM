@@ -409,4 +409,22 @@
     <string name="round_log_minutes_range">0~600 사이의 분을 입력해 주세요.</string>
     <string name="round_log_edit_action">공부한 시간 %1$s 수정</string>
     <string name="home_record_goal">어느 목표를 기록할까요?</string>
+
+    <!-- 마감일이 지난 목표 -->
+    <string name="overdue_title">마감일이 지났어요</string>
+    <string name="overdue_body">‘%1$s’의 마감일(%2$s)이 지났어요. 남은 분량은 약 %3$d시간이에요.\n\n마감일을 늘리면 다음 구간부터 새 기간에 맞춰 AI가 다시 계획해요. 여기까지로 마치면 지금까지 한 만큼으로 목표를 끝내요.</string>
+    <string name="overdue_extend">마감일 늘리기</string>
+    <string name="overdue_finish">여기까지로 마치기</string>
+    <string name="overdue_later">나중에</string>
+    <string name="overdue_pick_title">새 마감일을 골라 주세요</string>
+    <string name="overdue_finish_title">여기까지로 마칠까요?</string>
+    <string name="overdue_finish_body">지금까지 공부한 기록은 그대로 남고, 목표는 ‘마감 종료’로 완료 목록에 들어가요. 승인 전 AI 추천은 지워져요.</string>
+    <string name="toast_overdue_extended">마감일을 %1$s로 늘렸어요</string>
+    <string name="toast_overdue_finished">목표를 마감 종료로 마쳤어요</string>
+    <string name="home_overdue_chip">⏰ 마감 지난 목표 %1$d개 · 정리하기</string>
+    <string name="goal_detail_overdue_btn">정리하기</string>
+    <string name="overdue_card_body">마감일(%1$s)이 지났어요. 마감일을 늘리거나 여기까지로 마칠 수 있어요.</string>
+    <string name="goal_detail_meta_ended">마감 종료 %1$s</string>
+    <string name="home_ended_label">마감 종료</string>
+    <string name="home_ended_title">여기까지 잘 올라왔어요</string>
 </resources>

@@ -11,6 +11,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.oreum.R
+import com.example.oreum.ui.common.OverdueUi
+import com.example.oreum.domain.usecase.RoundEngine
 import com.example.oreum.data.model.ItemKind
 import com.example.oreum.data.model.PlanStatus
 import com.example.oreum.data.model.RoundStatus
@@ -80,7 +82,10 @@ class GoalDetailFragment : Fragment(R.layout.fragment_goal_detail) {
         val done = goal.completedAt != null
         binding.textTitle.text = goal.title
         binding.textMeta.text = if (done) {
-            getString(R.string.goal_detail_meta_done, DateText.monthDay(DateText.toDate(goal.completedAt!!)))
+            getString(
+                if (goal.endedAtDue) R.string.goal_detail_meta_ended else R.string.goal_detail_meta_done,
+                DateText.monthDay(DateText.toDate(goal.completedAt!!)),
+            )
         } else {
             listOfNotNull(
                 goal.subject.takeIf { it.isNotBlank() && it != goal.title },
@@ -90,7 +95,8 @@ class GoalDetailFragment : Fragment(R.layout.fragment_goal_detail) {
 
         renderState(state)
         renderRound(state)
-        renderDue(state.feasibility)
+        // 마감일이 지났으면 위쪽 '마감일이 지났어요' 카드로 안내하니, 아래 마감 위험 줄은 숨겨요
+        renderDue(state.feasibility.takeIf { state.goal?.let { g -> !RoundEngine.isOverdue(g, LocalDate.now().toEpochDay()) } ?: true })
         renderRoadmap(state)
         renderHistory(state.history)
     }
@@ -101,6 +107,16 @@ class GoalDetailFragment : Fragment(R.layout.fragment_goal_detail) {
         val proposal = state.proposal
         when {
             goal.completedAt != null -> binding.cardState.isVisible = false
+            // 마감일이 지났어요: 마감일 늘리기 · 여기까지로 마치기
+            RoundEngine.isOverdue(goal, LocalDate.now().toEpochDay()) -> {
+                binding.cardState.isVisible = true
+                binding.textStateTitle.setText(R.string.overdue_title)
+                binding.textStateBody.text = getString(R.string.overdue_card_body, DateText.monthDay(DateText.toDate(goal.dueAt)))
+                binding.btnState.isVisible = true
+                binding.btnState.setText(R.string.goal_detail_overdue_btn)
+                binding.btnState.icon = null
+                binding.btnState.setOnClickListener { OverdueUi.show(this, goal) }
+            }
             state.hasDraft -> {
                 binding.cardState.isVisible = true
                 binding.textStateTitle.setText(R.string.goal_detail_draft_title)

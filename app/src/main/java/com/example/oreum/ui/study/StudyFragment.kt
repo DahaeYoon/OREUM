@@ -79,7 +79,7 @@ class StudyFragment : Fragment(R.layout.fragment_study) {
 
             // 상태 하나만: 정상 도착 · 다음 구간 추천 · n구간 진행 중 · n구간 시작 전
             val status = when {
-                card.completed -> getString(R.string.study_state_top)
+                card.completed -> getString(if (card.goal.endedAtDue) R.string.home_ended_label else R.string.study_state_top)
                 card.hasProposal -> getString(R.string.study_state_proposal)
                 card.current?.status == RoundStatus.ACTIVE -> getString(R.string.study_state_active, card.current.no)
                 card.current?.status == RoundStatus.READY -> getString(R.string.study_state_ready, card.current.no)

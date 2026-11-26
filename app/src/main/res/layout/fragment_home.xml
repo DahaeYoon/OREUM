@@ -49,6 +49,23 @@
             android:textColor="#1F2D2A"
             android:textSize="21sp"
             tools:text="윤다해님,\n오늘도 한 걸음 올라가 볼까요?" />
+
+        <!-- 마감일이 지난 목표가 있으면: 누르면 마감일 늘리기 · 여기까지로 마치기 -->
+        <TextView
+            android:id="@+id/chip_overdue"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_pill"
+            android:backgroundTint="#FBE5DE"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="12dp"
+            android:textColor="#B5492E"
+            android:textSize="12.5sp"
+            android:textStyle="bold"
+            android:visibility="gone"
+            tools:text="⏰ 마감 지난 목표 1개 · 정리하기"
+            tools:visibility="visible" />
     </LinearLayout>
 
     <!-- 미완료 n개 · AI 복구 -->

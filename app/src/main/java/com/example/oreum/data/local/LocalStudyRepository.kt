@@ -132,6 +132,20 @@ class LocalStudyRepository(
         }
     }
 
+    override fun extendDue(goalId: String, newDueAt: Long) {
+        val now = System.currentTimeMillis()
+        _goals.update { list -> list.map { if (it.id == goalId) it.copy(dueAt = newDueAt, updatedAt = now) else it } }
+    }
+
+    override fun finishAtDue(goalId: String) {
+        val now = System.currentTimeMillis()
+        _goals.update { list ->
+            list.map { if (it.id == goalId) it.copy(completedAt = now, endedAtDue = true, updatedAt = now) else it }
+        }
+        _proposals.update { it - goalId }
+        _roadmapDrafts.update { it - goalId }
+    }
+
     override fun resetSampleData() {
         val rs = RoundSampleData.build(today(), ownerId, SampleData.goals(today(), ownerId))
         _goals.value = rs.goals

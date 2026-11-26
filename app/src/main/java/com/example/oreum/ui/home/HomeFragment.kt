@@ -22,6 +22,9 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.example.oreum.R
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.example.oreum.ui.common.OverdueUi
+import com.example.oreum.domain.usecase.RoundEngine
 import com.example.oreum.data.model.RoundStatus
 import com.example.oreum.data.model.TrailOrder
 import com.example.oreum.databinding.FragmentHomeBinding
@@ -143,12 +146,31 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
+    /** 마감일이 지난 목표가 있으면 칩을 보여 주고, 누르면 정리하기 (여러 개면 먼저 목표를 골라요) */
+    private fun renderOverdue(state: HomeUiState, today: Long) {
+        val overdue = state.goals.filter { RoundEngine.isOverdue(it, today) }.sortedBy { it.dueAt }
+        binding.chipOverdue.isVisible = overdue.isNotEmpty()
+        if (overdue.isEmpty()) return
+        binding.chipOverdue.text = getString(R.string.home_overdue_chip, overdue.size)
+        binding.chipOverdue.setOnClickListener {
+            if (overdue.size == 1) {
+                OverdueUi.show(this, overdue.first())
+            } else {
+                MaterialAlertDialogBuilder(requireContext())
+                    .setTitle(R.string.overdue_title)
+                    .setItems(overdue.map { it.title }.toTypedArray()) { _, i -> OverdueUi.show(this, overdue[i]) }
+                    .show()
+            }
+        }
+    }
+
     private fun render(state: HomeUiState) {
         if (!state.loaded) return
         val previous = lastState
         lastState = state
         showSummitIfPending()
         val today = LocalDate.now()
+        renderOverdue(state, today.toEpochDay())
 
         binding.textDate.text = today.format(DATE_FORMAT)
         binding.textGreeting.text = getString(R.string.home_greeting, state.nickname.ifBlank { getString(R.string.home_default_name) })
@@ -309,8 +331,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 btn.setOnClickListener { navigateSafe(R.id.action_home_to_goalForm) }
             }
             NextCard.Top -> {
-                binding.textNextLabel.setText(R.string.home_top_label)
-                binding.textNextTitle.setText(R.string.home_top_roadmap_title)
+                // 마감일에 '여기까지로 마치기'로 끝낸 목표는 정상 도착이 아니라 마감 종료로 보여 줘요
+                val ended = lastState?.focusGoal?.endedAtDue == true
+                binding.textNextLabel.setText(if (ended) R.string.home_ended_label else R.string.home_top_label)
+                binding.textNextTitle.setText(if (ended) R.string.home_ended_title else R.string.home_top_roadmap_title)
                 binding.textNextCap.setText(R.string.home_top_cap)
                 btn.text = getString(R.string.home_btn_new_mountain)
                 btn.setIconResource(R.drawable.ic_route)

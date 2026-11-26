@@ -89,6 +89,9 @@ object RoundEngine {
     }
 
     // ---------------- 날짜 · 시간 도우미 ----------------
+    /** 마감일이 지났는데 아직 끝나지 않은 목표 */
+    fun isOverdue(g: Goal, today: Long): Boolean = g.completedAt == null && g.dueAt > 0 && today > dueDay(g)
+
     fun dueDay(g: Goal): Long = Instant.ofEpochMilli(g.dueAt).atZone(ZoneId.systemDefault()).toLocalDate().toEpochDay()
     private fun dueHour(g: Goal): Int = Instant.ofEpochMilli(g.dueAt).atZone(ZoneId.systemDefault()).hour
 

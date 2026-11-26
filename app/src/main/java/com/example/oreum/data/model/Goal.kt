@@ -30,6 +30,8 @@ data class Goal(
     val stage: Int = 0,
     /** 모든 할 일을 마친 시각. null이면 진행 중인 산 */
     val completedAt: Long? = null,
+    /** 마감일이 지나 '여기까지로 마치기'로 끝낸 목표 (정상 도착이 아니라 마감 종료) */
+    val endedAtDue: Boolean = false,
     val createdAt: Long = 0L,
     val updatedAt: Long = 0L,
 )

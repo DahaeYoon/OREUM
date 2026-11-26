@@ -69,10 +69,22 @@
                 android:textAppearance="@style/TextAppearance.OREUM.Caption"
                 android:visibility="gone" />
 
-            <!-- AI가 만드는 중 · 실패 (다시 시도) -->
-            <include
-                android:id="@+id/ai_state"
-                layout="@layout/view_ai_state" />
+            <!-- AI가 만드는 중 · 실패 (다시 시도): 남은 화면의 가운데에 보여요 (위 '뒤로' 줄만큼 살짝 위로) -->
+            <FrameLayout
+                android:id="@+id/ai_state_wrap"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:paddingBottom="56dp"
+                android:visibility="gone">
+
+                <include
+                    android:id="@+id/ai_state"
+                    layout="@layout/view_ai_state"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical" />
+            </FrameLayout>
 
             <LinearLayout
                 android:id="@+id/group_draft"
